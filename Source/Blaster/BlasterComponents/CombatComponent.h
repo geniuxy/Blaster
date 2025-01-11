@@ -24,7 +24,7 @@ public:
 
 	// friend class 可以访问所有的protected和private
 	friend class ABlasterCharacter;
-
+	
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	void Reload();
@@ -52,6 +52,14 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void UpdateCarriedAmmo();
+	void UpdateCarriedWeaponType();
+	void PlayEquipWeaponSound();
+	void ReloadEmptyWeapon();
 	
 	void Fire();
 	

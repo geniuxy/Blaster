@@ -149,8 +149,7 @@ void UCombatComponent::FireTimerFinished()
 	if (bFireButtonPressed && EquippedWeapon->bAutomatic)
 		Fire();
 	// 如果武器没子弹了，自动换弹
-	if (EquippedWeapon->IsEmpty())
-		Reload();
+	ReloadEmptyWeapon();
 }
 
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TracerHitTarget)
@@ -180,39 +179,29 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (PlayerCharacter == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
-	if (EquippedWeapon)
-		EquippedWeapon->Dropped();
 
+	DropEquippedWeapon();
 	EquippedWeapon = WeaponToEquip;
 	// 这边WeaponState属性改变了之后，通过OnRep方法可以通知client进行操作
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	const USkeletalMeshSocket* HandSocket = PlayerCharacter->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-	if (HandSocket)
-		HandSocket->AttachActor(EquippedWeapon, PlayerCharacter->GetMesh());
+
+	AttachActorToRightHand(WeaponToEquip);
 	// 这个SetOwner方法可以看定义，当服务器端调用SetOwner的时候，会通知客户端
 	EquippedWeapon->SetOwner(PlayerCharacter);
 	// 服务端更新子弹数
 	EquippedWeapon->UpdateWeaponAmmo();
 
 	// 更新携带弹药HUD
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
-	if (PlayerController)
-	{
-		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
-		PlayerController->SetHUDCarriedWeaponType(EquippedWeapon->GetWeaponType());
-	}
+	UpdateCarriedAmmo();
+
+	// 更新携带武器类型HUD
+	UpdateCarriedWeaponType();
 
 	// 播放捡枪声音
-	if (EquippedWeapon->EquipSound)
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, PlayerCharacter->GetActorLocation());
+	PlayEquipWeaponSound();
 
 	// 如果捡起来的武器没子弹了，自动换弹
-	if (EquippedWeapon->IsEmpty())
-		Reload();
+	ReloadEmptyWeapon();
 
 	// 角色面向与运动方向相同(bOrientRotationToMovement)
 	PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -227,26 +216,81 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		// 这里调用SetWeaponState和AttachActor
 		// 是为了在client端，能够先调用SetWeaponState，再执行AttachActor
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		const USkeletalMeshSocket* HandSocket = PlayerCharacter->GetMesh()->GetSocketByName(FName("RightHandSocket"));
-		if (HandSocket)
-			HandSocket->AttachActor(EquippedWeapon, PlayerCharacter->GetMesh());
+		AttachActorToRightHand(EquippedWeapon);
 		// 角色面向与运动方向相同(bOrientRotationToMovement)
 		PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
 		// 面向与镜头方向相同(bUseControllerRotationYaw)
 		PlayerCharacter->bUseControllerRotationYaw = true;
 
 		// 播放捡枪声音
-		if (EquippedWeapon->EquipSound)
-			UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound,
-			                                      PlayerCharacter->GetActorLocation());
+		PlayEquipWeaponSound();
 
 		// 当装备上武器后，需要更新客户端client的HUD武器类型
-		PlayerController = PlayerController == nullptr
-			                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-			                   : PlayerController;
-		if (PlayerController)
-			PlayerController->SetHUDCarriedWeaponType(EquippedWeapon->GetWeaponType());
+		UpdateCarriedWeaponType();
 	}
+}
+
+void UCombatComponent::DropEquippedWeapon()
+{
+	if (EquippedWeapon)
+		EquippedWeapon->Dropped();
+}
+
+void UCombatComponent::AttachActorToRightHand(AActor* ActorToAttach)
+{
+	if (PlayerCharacter == nullptr || PlayerCharacter->GetMesh() == nullptr || ActorToAttach == nullptr) return;
+	const USkeletalMeshSocket* HandSocket = PlayerCharacter->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	if (HandSocket)
+		HandSocket->AttachActor(ActorToAttach, PlayerCharacter->GetMesh());
+}
+
+void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
+{
+	if (PlayerCharacter == nullptr || PlayerCharacter->GetMesh() == nullptr || ActorToAttach == nullptr ||
+		EquippedWeapon == nullptr)
+		return;
+	bool bUsePistolWeapon =
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol ||
+		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SubmachineGun;
+	FName SocketName = bUsePistolWeapon ? FName("PistolSocket") : FName("LeftHandSocket");
+	const USkeletalMeshSocket* HandSocket = PlayerCharacter->GetMesh()->GetSocketByName(SocketName);
+	if (HandSocket)
+		HandSocket->AttachActor(ActorToAttach, PlayerCharacter->GetMesh());
+}
+
+void UCombatComponent::UpdateCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr) return;
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+
+	PlayerController = PlayerController == nullptr
+		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
+		                   : PlayerController;
+	if (PlayerController)
+		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
+}
+
+void UCombatComponent::UpdateCarriedWeaponType()
+{
+	if (EquippedWeapon == nullptr) return;
+	PlayerController = PlayerController == nullptr
+		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
+		                   : PlayerController;
+	if (PlayerController)
+		PlayerController->SetHUDCarriedWeaponType(EquippedWeapon->GetWeaponType());
+}
+
+void UCombatComponent::PlayEquipWeaponSound()
+{
+	if (PlayerCharacter && EquippedWeapon && EquippedWeapon->EquipSound)
+		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, PlayerCharacter->GetActorLocation());
+}
+
+void UCombatComponent::ReloadEmptyWeapon()
+{
+	if (EquippedWeapon && EquippedWeapon->IsEmpty())
+		Reload();
 }
 
 void UCombatComponent::Reload()
@@ -383,15 +427,19 @@ void UCombatComponent::ServerThrowGrenade_Implementation()
 
 void UCombatComponent::HandleThrowGrenade()
 {
-	if (PlayerCharacter)
+	if (EquippedWeapon && PlayerCharacter)
+	{
 		PlayerCharacter->PlayThrowGrenadeMontage();
+		AttachActorToLeftHand(EquippedWeapon);
+	}
 }
 
 void UCombatComponent::ThrowGrenadeFinished()
 {
-	if (PlayerCharacter == nullptr) return;
+	if (PlayerCharacter == nullptr || EquippedWeapon == nullptr) return;
 	if (PlayerCharacter->HasAuthority())
 		CombatState = ECombatState::ECS_Unoccupied;
+	AttachActorToRightHand(EquippedWeapon);
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()
