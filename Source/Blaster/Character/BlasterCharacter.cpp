@@ -148,6 +148,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ThisClass::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ThisClass::FireButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &ThisClass::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &ThisClass::ThrowGrenadeButtonPressed);
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -239,6 +240,13 @@ void ABlasterCharacter::PlayHitReatMontage()
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+void ABlasterCharacter::PlayThrowGrenadeMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ThrowGrenadeMontage)
+		AnimInstance->Montage_Play(ThrowGrenadeMontage);
 }
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
@@ -430,6 +438,13 @@ void ABlasterCharacter::ReloadButtonPressed()
 	if (bDisableGamePlay) return;
 	if (Combat)
 		Combat->Reload();
+}
+
+void ABlasterCharacter::ThrowGrenadeButtonPressed()
+{
+	if (bDisableGamePlay) return;
+	if (Combat)
+		Combat->ThrowGrenade();
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()

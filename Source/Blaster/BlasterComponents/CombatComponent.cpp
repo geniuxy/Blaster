@@ -179,6 +179,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (PlayerCharacter == nullptr || WeaponToEquip == nullptr) return;
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
 	if (EquippedWeapon)
 		EquippedWeapon->Dropped();
 
@@ -251,7 +252,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::Reload()
 {
 	// 必须有子弹以及不处于Reloading状态才能Reload
-	if (CarriedAmmo > 0 && CombatState != ECombatState::ECS_Reloading)
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)
 	{
 		ServerReload();
 	}
@@ -268,13 +269,17 @@ void UCombatComponent::OnRep_CombatState()
 {
 	switch (CombatState)
 	{
-	case ECombatState::ECS_Reloading:
-		HandleReload();
-		break;
 	case ECombatState::ECS_Unoccupied:
 		// 下面两行判断作用是：client端在reload之后能持续开枪
 		if (bFireButtonPressed)
 			Fire();
+		break;
+	case ECombatState::ECS_Reloading:
+		HandleReload();
+		break;
+	case ECombatState::ECS_ThrowingGrenade:
+		HandleThrowGrenade();
+		break;
 	default: ;
 	}
 }
@@ -361,6 +366,32 @@ int32 UCombatComponent::AmountToReload()
 		return FMath::Clamp(RoomInMag, 0, Least);
 	}
 	return 0;
+}
+
+void UCombatComponent::ThrowGrenade()
+{
+	if (CombatState == ECombatState::ECS_Unoccupied)
+		ServerThrowGrenade();
+}
+
+void UCombatComponent::ServerThrowGrenade_Implementation()
+{
+	if (PlayerCharacter == nullptr) return;
+	CombatState = ECombatState::ECS_ThrowingGrenade;
+	HandleThrowGrenade();
+}
+
+void UCombatComponent::HandleThrowGrenade()
+{
+	if (PlayerCharacter)
+		PlayerCharacter->PlayThrowGrenadeMontage();
+}
+
+void UCombatComponent::ThrowGrenadeFinished()
+{
+	if (PlayerCharacter == nullptr) return;
+	if (PlayerCharacter->HasAuthority())
+		CombatState = ECombatState::ECS_Unoccupied;
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()

@@ -39,6 +39,9 @@ public:
 
 	void JumpToShotgunEnd();
 
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenadeFinished();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -49,8 +52,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	
 	void Fire();
-
+	
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。
 	// 是FVector的一个派生（子）类
 	// 缩放后的浮点数值四舍五入到最接近的整数值
@@ -71,6 +75,13 @@ protected:
 	void HandleReload(); // 用来处理Reload中server和client都要执行的事务
 
 	int32 AmountToReload();
+
+	void ThrowGrenade();
+
+	UFUNCTION(Server, Reliable)
+	void ServerThrowGrenade();
+
+	void HandleThrowGrenade();
 
 private:
 	// 用于绑定对应的Character(BlasterCharacter)
@@ -183,7 +194,7 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
-
+	
 	UFUNCTION()
 	void OnRep_CombatState();
 

@@ -8,6 +8,8 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "BlasterAnimInstance.generated.h"
 
+class ABlasterCharacter;
+
 /**
  * 
  */
@@ -23,7 +25,7 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
-	class ABlasterCharacter* BlasterCharacter;
+	ABlasterCharacter* BlasterCharacter;
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float Speed;

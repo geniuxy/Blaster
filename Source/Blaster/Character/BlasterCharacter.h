@@ -37,6 +37,10 @@ public:
 
 	void PlayReloadMontage();
 
+	void PlayHitReatMontage();
+
+	void PlayThrowGrenadeMontage();
+	
 	// virtual void OnRep_ReplicatedMovement() override;
 
 	void Elim();
@@ -73,7 +77,7 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void ReloadButtonPressed();
-	void PlayHitReatMontage();
+	void ThrowGrenadeButtonPressed();
 
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
@@ -137,6 +141,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Combat)
 	UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category=Combat)
+	UAnimMontage* ThrowGrenadeMontage;
 
 	void HideCameraIfCharacterClose();
 
