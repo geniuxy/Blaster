@@ -296,10 +296,8 @@ void UCombatComponent::ReloadEmptyWeapon()
 void UCombatComponent::Reload()
 {
 	// 必须有子弹以及不处于Reloading状态才能Reload
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied)
-	{
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull())
 		ServerReload();
-	}
 }
 
 void UCombatComponent::ServerReload_Implementation()
