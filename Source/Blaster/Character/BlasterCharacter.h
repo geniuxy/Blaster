@@ -40,7 +40,7 @@ public:
 	void PlayHitReatMontage();
 
 	void PlayThrowGrenadeMontage();
-	
+
 	// virtual void OnRep_ReplicatedMovement() override;
 
 	void Elim();
@@ -259,4 +259,6 @@ public:
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
+
+	FORCEINLINE UStaticMeshComponent* GetAttachGrenade() const { return AttachGrenade; }
 };

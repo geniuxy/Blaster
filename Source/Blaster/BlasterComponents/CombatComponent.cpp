@@ -293,6 +293,12 @@ void UCombatComponent::ReloadEmptyWeapon()
 		Reload();
 }
 
+void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
+{
+	if (PlayerCharacter && PlayerCharacter->GetAttachGrenade())
+		PlayerCharacter->GetAttachGrenade()->SetVisibility(bShowGrenade);
+}
+
 void UCombatComponent::Reload()
 {
 	// 必须有子弹以及不处于Reloading状态才能Reload
@@ -429,6 +435,7 @@ void UCombatComponent::HandleThrowGrenade()
 	{
 		PlayerCharacter->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
+		ShowAttachedGrenade(true);
 	}
 }
 
@@ -438,6 +445,11 @@ void UCombatComponent::ThrowGrenadeFinished()
 	if (PlayerCharacter->HasAuthority())
 		CombatState = ECombatState::ECS_Unoccupied;
 	AttachActorToRightHand(EquippedWeapon);
+}
+
+void UCombatComponent::LaunchGrenade()
+{
+	ShowAttachedGrenade(false);
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()

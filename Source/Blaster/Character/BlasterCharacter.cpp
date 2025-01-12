@@ -102,6 +102,8 @@ void ABlasterCharacter::BeginPlay()
 	UpdateHUDHealth();
 	if (HasAuthority())
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
+	if (AttachGrenade)
+		AttachGrenade->SetVisibility(false);
 }
 
 void ABlasterCharacter::Tick(float DeltaTime)
