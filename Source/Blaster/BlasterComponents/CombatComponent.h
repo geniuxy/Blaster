@@ -95,6 +95,9 @@ protected:
 
 	void HandleThrowGrenade();
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AProjectile> GrenadeClass;
+
 private:
 	// 用于绑定对应的Character(BlasterCharacter)
 	UPROPERTY()

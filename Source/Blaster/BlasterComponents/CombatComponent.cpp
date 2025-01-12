@@ -5,6 +5,7 @@
 
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/Weapon/Projectile.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -418,7 +419,7 @@ int32 UCombatComponent::AmountToReload()
 
 void UCombatComponent::ThrowGrenade()
 {
-	if (CombatState == ECombatState::ECS_Unoccupied)
+	if (CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon)
 		ServerThrowGrenade();
 }
 
@@ -450,6 +451,16 @@ void UCombatComponent::ThrowGrenadeFinished()
 void UCombatComponent::LaunchGrenade()
 {
 	ShowAttachedGrenade(false);
+	if (PlayerCharacter && PlayerCharacter->HasAuthority() && PlayerCharacter->GetAttachGrenade())
+	{
+		const FVector StartingLocation = PlayerCharacter->GetAttachGrenade()->GetComponentLocation();
+		FVector ToTarget = HitTarget - StartingLocation;
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = PlayerCharacter;
+		SpawnParameters.Instigator = PlayerCharacter;
+		if (UWorld* World = GetWorld())
+			World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParameters);
+	}
 }
 
 void UCombatComponent::OnRep_CarriedAmmo()
