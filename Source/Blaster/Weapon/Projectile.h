@@ -20,6 +20,9 @@ public:
 
 	virtual void Destroyed() override;
 
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* CollisionBox;
+
 protected:
 	UFUNCTION()
 	virtual void BeginPlay() override;
@@ -29,7 +32,7 @@ protected:
 	                   FVector NormalImpulse, const FHitResult& Hit);
 
 	void StartDestroyTimer();
-	
+
 	void DestroyTimerFinished();
 
 	void SpawnTrailSystem();
@@ -50,9 +53,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
-
-	UPROPERTY(EditAnywhere)
-	UBoxComponent* CollisionBox;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* TrailSystem;

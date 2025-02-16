@@ -6,6 +6,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Components/BoxComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -465,7 +466,12 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		SpawnParameters.Owner = PlayerCharacter;
 		SpawnParameters.Instigator = PlayerCharacter;
 		if (UWorld* World = GetWorld())
-			World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParameters);
+		{
+			AProjectile* Grenade = World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParameters);
+			if (Grenade)
+				Grenade->CollisionBox->IgnoreActorWhenMoving(SpawnParameters.Owner, true);
+			
+		}
 	}
 }
 
