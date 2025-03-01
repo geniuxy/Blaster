@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/HUD/BlasterHUD.h"
+#include "Blaster/Pickups/AmmoPickup.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/ActorComponent.h"
@@ -47,6 +48,8 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerLaunchGrenade(const FVector_NetQuantize& Target);
+
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 protected:
 	virtual void BeginPlay() override;
@@ -186,6 +189,9 @@ private:
 	void OnRep_CarriedAmmo();
 
 	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxCarriedAmmo = 500;
 
 	UPROPERTY(EditAnywhere)
 	int32 StartCarriedAmmoAmount_AR = 30;
