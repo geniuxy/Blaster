@@ -10,6 +10,7 @@
 #include "BlasterAnimInstance.h"
 #include "Blaster/Blaster.h"
 #include "TimerManager.h"
+#include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/OverHeadWidget.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
@@ -43,6 +44,9 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);
+
+	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
+	Buff->SetIsReplicated(true);
 
 	// 在蓝图类中允许crouch
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;

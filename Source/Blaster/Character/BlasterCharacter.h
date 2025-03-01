@@ -15,6 +15,8 @@
 #include "Sound/SoundCue.h"
 #include "BlasterCharacter.generated.h"
 
+class UBuffComponent;
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairInterface
 {
@@ -117,6 +119,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	UCombatComponent* Combat;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	UBuffComponent* Buff;
 
 	// RPC client调用server去捡装备
 	// 需要指定RPC是否reliable，reliable的话会重复发请求
