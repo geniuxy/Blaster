@@ -24,7 +24,7 @@ public:
 
 	// friend class 可以访问所有的protected和private
 	friend class ABlasterCharacter;
-	
+
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	void Reload();
@@ -67,9 +67,9 @@ protected:
 	void PlayEquipWeaponSound();
 	void ReloadEmptyWeapon();
 	void ShowAttachedGrenade(bool bShowGrenade);
-	
+
 	void Fire();
-	
+
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。
 	// 是FVector的一个派生（子）类
 	// 缩放后的浮点数值四舍五入到最接近的整数值
@@ -212,12 +212,28 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
-	
+
 	UFUNCTION()
 	void OnRep_CombatState();
 
 	void UpdateAmmoValue();
-	
+
 	void UpdateShotgunAmmoValue();
+
+	/**
+	 * Throw Grenade
+	 */
+	UPROPERTY(ReplicatedUsing=OnRep_Grenades)
+	int32 Grenades = 4;
+
+	UFUNCTION()
+	void OnRep_Grenades();
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxGrenades = 4;
+
+	void UpdateHUDGrenades();
+
 public:
+	FORCEINLINE int32 GetGrenades() const {return Grenades;}
 };

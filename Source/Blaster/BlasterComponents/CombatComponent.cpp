@@ -30,6 +30,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
+	DOREPLIFETIME(UCombatComponent, Grenades);
 }
 
 void UCombatComponent::BeginPlay()
@@ -426,8 +427,10 @@ void UCombatComponent::ThrowGrenade()
 
 void UCombatComponent::ServerThrowGrenade_Implementation()
 {
+	if (Grenades == 0) return;
 	if (PlayerCharacter == nullptr) return;
 	CombatState = ECombatState::ECS_ThrowingGrenade;
+	Grenades = FMath::Clamp(Grenades - 1, 0, MaxGrenades);
 	HandleThrowGrenade();
 }
 
@@ -438,7 +441,22 @@ void UCombatComponent::HandleThrowGrenade()
 		PlayerCharacter->PlayThrowGrenadeMontage();
 		AttachActorToLeftHand(EquippedWeapon);
 		ShowAttachedGrenade(true);
+		UpdateHUDGrenades();
 	}
+}
+
+void UCombatComponent::OnRep_Grenades()
+{
+	UpdateHUDGrenades();
+}
+
+void UCombatComponent::UpdateHUDGrenades()
+{
+	// 调整CarriedAmmo数量和HUD
+	PlayerController =
+		PlayerController == nullptr ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller) : PlayerController;
+	if (PlayerController)
+		PlayerController->SetHUDGrenades(Grenades);
 }
 
 void UCombatComponent::ThrowGrenadeFinished()
@@ -467,10 +485,10 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		SpawnParameters.Instigator = PlayerCharacter;
 		if (UWorld* World = GetWorld())
 		{
-			AProjectile* Grenade = World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParameters);
+			AProjectile* Grenade =
+				World->SpawnActor<AProjectile>(GrenadeClass, StartingLocation, ToTarget.Rotation(), SpawnParameters);
 			if (Grenade)
 				Grenade->CollisionBox->IgnoreActorWhenMoving(SpawnParameters.Owner, true);
-			
 		}
 	}
 }

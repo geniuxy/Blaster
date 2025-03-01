@@ -49,4 +49,7 @@ public:
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* CountdownAnimation;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* GrenadeText;
 };

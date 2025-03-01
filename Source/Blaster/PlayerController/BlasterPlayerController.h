@@ -27,6 +27,7 @@ public:
 	void SetHUDCarriedWeaponType(EWeaponType WeaponType);
 	void SetHUDMatchCountDown(float CountDown);
 	void SetHUDAnnouncementCountDown(float CountDown);
+	void SetHUDGrenades(int32 Grenades);
 
 	// 这是为了解决server端，玩家重生之后没有更新生命条的bug
 	// 当玩家重生以后，Controller会重新连接，这个时候会调用OnPossess
@@ -107,4 +108,5 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	int32 HUDGrenades;
 };

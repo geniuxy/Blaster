@@ -258,6 +258,7 @@ void ABlasterCharacter::PlayThrowGrenadeMontage()
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                       class AController* InstigatorController, AActor* DamageCauser)
 {
+	if (bElimmed) return;
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	if (!bElimmed)

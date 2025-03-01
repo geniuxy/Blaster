@@ -233,6 +233,18 @@ void ABlasterPlayerController::SetHUDAnnouncementCountDown(float CountDown)
 	}
 }
 
+void ABlasterPlayerController::SetHUDGrenades(int32 Grenades)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bValid = BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->GrenadeText;
+	if (bValid)
+	{
+		FString CarriedGrenadeText = FString::Printf(TEXT("%d"), Grenades);
+		BlasterHUD->CharacterOverlay->GrenadeText->SetText(FText::FromString(CarriedGrenadeText));
+	}
+}
+
 void ABlasterPlayerController::SetHUDTime()
 {
 	// 这一步是因为，对于server来说Playcontroller的ServerCheckMatchState在GameMode的BeginPlay之前，因此初始化的值不对
@@ -275,6 +287,10 @@ void ABlasterPlayerController::PollInit()
 				SetHUDHealth(HUDCurrentHealth, HUDMaxHealth);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
+				
+				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+				if (BlasterCharacter && BlasterCharacter->GetCombat())
+					SetHUDGrenades(BlasterCharacter->GetCombat()->GetGrenades());
 			}
 		}
 	}
