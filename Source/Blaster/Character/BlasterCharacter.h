@@ -50,13 +50,15 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
-	virtual void Destroyed() override;
+	void UpdateHUDHealth();
 
 	UPROPERTY(Replicated)
 	bool bDisableGamePlay = false;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
+
+	virtual void Destroyed() override;
 
 protected:
 	UFUNCTION()
@@ -84,7 +86,6 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                   class AController* InstigatorController, AActor* DamageCauser);
-	void UpdateHUDHealth();
 
 	// 初始化HUD状态
 	// Poll for any relelvant classes and initialize our HUD
@@ -119,7 +120,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	UCombatComponent* Combat;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	UBuffComponent* Buff;
 
@@ -181,7 +182,7 @@ private:
 	float CurrentHealth = 100.f;
 
 	UFUNCTION()
-	void OnRep_Health();
+	void OnRep_Health(float LastHealth);
 
 	/**
 	 * Elim
@@ -255,6 +256,8 @@ public:
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 
+	FORCEINLINE void SetCurrentHealth(float HealthAmount) { CurrentHealth = HealthAmount; }
+
 	FORCEINLINE float GetCurrentHealth() const { return CurrentHealth; }
 
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
@@ -262,6 +265,8 @@ public:
 	ECombatState GetCombatState() const;
 
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+
+	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
 

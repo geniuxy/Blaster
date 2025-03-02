@@ -516,9 +516,8 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 void ABlasterCharacter::UpdateHUDHealth()
 {
 	// 这里的Controller 是每个Character自带的成员变量Controller
-	BlasterPlayerController = BlasterPlayerController == nullptr
-		                          ? Cast<ABlasterPlayerController>(Controller)
-		                          : BlasterPlayerController;
+	BlasterPlayerController =
+		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 		BlasterPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
 }
@@ -613,10 +612,10 @@ void ABlasterCharacter::ElimTimerFinished()
 		BlasterGameMode->RequestRespawn(this, Controller);
 }
 
-void ABlasterCharacter::OnRep_Health()
+void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
-	if (!bElimmed)
+	if (!bElimmed && CurrentHealth < LastHealth)
 		PlayHitReatMontage();
 }
 
