@@ -20,7 +20,7 @@ void UBuffComponent::BeginPlay()
 void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	if (bHealing)
 		HealRampUp(DeltaTime);
 }
@@ -28,13 +28,14 @@ void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UBuffComponent::HealRampUp(float DeltaTime)
 {
 	if (BlasterCharacter == nullptr || BlasterCharacter->IsElimmed()) return;
+
 	const float HealingThisFrame = HealingRate * DeltaTime;
 	BlasterCharacter->SetCurrentHealth(
-		FMath::Clamp(BlasterCharacter->GetCurrentHealth() + HealingThisFrame, 0, BlasterCharacter->GetMaxHealth()));
+		FMath::Clamp(BlasterCharacter->GetCurrentHealth() + HealingThisFrame, 0.f, BlasterCharacter->GetMaxHealth()));
 	BlasterCharacter->UpdateHUDHealth();
 	AmountToHeal -= HealingThisFrame;
 
-	if (AmountToHeal <= 0.f || BlasterCharacter->GetCurrentHealth() == BlasterCharacter->GetMaxHealth())
+	if (AmountToHeal <= 0.f || BlasterCharacter->GetCurrentHealth() >= BlasterCharacter->GetMaxHealth())
 	{
 		bHealing = false;
 		AmountToHeal = 0.f;

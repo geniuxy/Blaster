@@ -177,6 +177,8 @@ void ABlasterCharacter::PostInitializeComponents()
 
 	if (Combat)
 		Combat->PlayerCharacter = this;
+	if (Buff)
+		Buff->BlasterCharacter = this;
 }
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
