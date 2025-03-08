@@ -103,6 +103,7 @@ void ABlasterCharacter::BeginPlay()
 	if (BlasterPlayerController)
 		BlasterPlayerController->HideHUDDeathMessage();
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	if (HasAuthority())
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	if (AttachGrenade)
@@ -269,8 +270,24 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
                                       class AController* InstigatorController, AActor* DamageCauser)
 {
 	if (bElimmed) return;
-	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, MaxHealth);
+	float DamageToHealth = Damage;
+	if (CurrentShield > 0.f)
+	{
+		if (CurrentShield >= Damage)
+		{
+			DamageToHealth = 0.f;
+			CurrentShield = FMath::Clamp(CurrentShield - Damage, 0.f, MaxShield);
+		}
+		else
+		{
+			DamageToHealth = FMath::Clamp(DamageToHealth - CurrentShield, 0.f, Damage);
+			CurrentShield = 0.f;
+		}
+	}
+	CurrentHealth = FMath::Clamp(CurrentHealth - DamageToHealth, 0.f, MaxHealth);
+	
 	UpdateHUDHealth();
+	UpdateHUDShield();
 	if (!bElimmed)
 		PlayHitReatMontage();
 
