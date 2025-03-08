@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Pickup.generated.h"
 
+class UNiagaraSystem;
+class UNiagaraComponent;
 class USphereComponent;
 
 UCLASS()
@@ -45,5 +47,10 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* PickupMesh;
 
+	UPROPERTY(VisibleAnywhere)
+	UNiagaraComponent* PickupEffectComponent;
+
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* PickupEffect;
 public:
 };

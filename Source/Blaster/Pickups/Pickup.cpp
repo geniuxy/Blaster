@@ -3,6 +3,8 @@
 
 #include "Pickup.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -29,6 +31,9 @@ APickup::APickup()
 	OverlapSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	OverlapSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	OverlapSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+
+	PickupEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupEffectComponent"));
+	PickupEffectComponent->SetupAttachment(GetRootComponent());
 }
 
 void APickup::BeginPlay()
@@ -53,6 +58,8 @@ void APickup::Destroyed()
 
 	if (PickupSound)
 		UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
+	if (PickupEffect)
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupEffect, GetActorLocation(), GetActorRotation());
 }
 
 

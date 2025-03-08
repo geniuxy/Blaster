@@ -178,7 +178,10 @@ void ABlasterCharacter::PostInitializeComponents()
 	if (Combat)
 		Combat->PlayerCharacter = this;
 	if (Buff)
+	{
 		Buff->BlasterCharacter = this;
+		Buff->SetInitSpeed(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
+	}
 }
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)

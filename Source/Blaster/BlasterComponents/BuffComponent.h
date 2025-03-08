@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blaster/Pickups/HealthPickup.h"
+#include "Blaster/Pickups/SpeedPickup.h"
 #include "Components/ActorComponent.h"
 #include "BuffComponent.generated.h"
 
@@ -23,19 +24,31 @@ public:
 		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void Heal(float HealAmount, float HealingTime);
+	void IncreaseSpeed(float BaseBuffSpeed, float CrouchBuffSpeed, float SpeedBuffTime);
+	void SetInitSpeed(float BaseSpeed, float CrouchSpeed);
 
 protected:
 	virtual void BeginPlay() override;
-	
-	void HealRampUp(float DeltaTime);
 
 private:
 	UPROPERTY()
 	ABlasterCharacter* BlasterCharacter;
 
+	/** Healing */
 	bool bHealing = false;
 	float HealingRate = 0.f;
 	float AmountToHeal = 0.f;
+	void HealRampUp(float DeltaTime);
+
+	/** Speed */
+	float InitBaseSpeed;
+	float InitCrouchSpeed;
+
+	FTimerHandle SpeedBuffTimer;
+	void ResetSpeed();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetSpeed(float BaseSpeed, float CrouchSpeed);
 
 public:
 };

@@ -1,22 +1,22 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "HealthPickup.generated.h"
+#include "SpeedPickup.generated.h"
 
-class UNiagaraSystem;
-class UNiagaraComponent;
-
+/**
+ * 
+ */
 UCLASS()
-class BLASTER_API AHealthPickup : public APickup
+class BLASTER_API ASpeedPickup : public APickup
 {
 	GENERATED_BODY()
 
 public:
-	AHealthPickup();
-
+	ASpeedPickup();
+	
 protected:
 	virtual void OnSphereOverlap(
 		UPrimitiveComponent* OverlappedComponent,
@@ -29,10 +29,11 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	float HealAmount = 100.f;
+	float BaseBuffSpeed = 1000.f;
 
 	UPROPERTY(EditAnywhere)
-	float HealingTime = 5.f;
+	float CrouchBuffSpeed = 750.f;
 
-public:
+	UPROPERTY(EditAnywhere)
+	float SpeedBuffTime = 5.f;
 };

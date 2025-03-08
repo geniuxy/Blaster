@@ -13,14 +13,6 @@ AHealthPickup::AHealthPickup()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
-
-	PickupEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PickupEffectComponent"));
-	PickupEffectComponent->SetupAttachment(GetRootComponent());
-}
-
-void AHealthPickup::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -37,17 +29,4 @@ void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 			Buff->Heal(HealAmount, HealingTime);
 	}
 	Destroy();
-}
-
-void AHealthPickup::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void AHealthPickup::Destroyed()
-{
-	if (PickupEffect)
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, PickupEffect, GetActorLocation(), GetActorRotation());
-
-	Super::Destroyed();
 }
