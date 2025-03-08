@@ -18,6 +18,7 @@ class BLASTER_API ABlasterPlayerController : public APlayerController
 
 public:
 	void SetHUDHealth(float CurrentHealth, float MaxHealth);
+	void SetHUDShield(float CurrentShield, float MaxShield);
 	void SetHUDScore(float ScoreAmount);
 	void SetHUDDefeats(int32 Defeats);
 	void ShowHUDDeathMessage(const FString& KillerName);
@@ -106,6 +107,8 @@ private:
 	bool bInitializeCharacterOverlay = false;
 	float HUDCurrentHealth;
 	float HUDMaxHealth;
+	float HUDCurrentShield;
+	float HUDMaxShield;
 	float HUDScore;
 	int32 HUDDefeats;
 	int32 HUDGrenades;

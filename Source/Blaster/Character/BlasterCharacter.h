@@ -51,6 +51,7 @@ public:
 	void MulticastElim();
 
 	void UpdateHUDHealth();
+	void UpdateHUDShield();
 
 	UPROPERTY(Replicated)
 	bool bDisableGamePlay = false;
@@ -183,6 +184,18 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health(float LastHealth);
+
+	/**
+	 * Player Shield
+	 */
+	UPROPERTY(EditAnywhere, Category= "Player Stats")
+	float MaxShield = 100.f;
+
+	UPROPERTY(ReplicatedUsing=OnRep_Shield, VisibleAnywhere, Category= "Player Stats")
+	float CurrentShield = 100.f;
+	
+	UFUNCTION()
+	void OnRep_Shield(float LastShield);
 
 	/**
 	 * Elim

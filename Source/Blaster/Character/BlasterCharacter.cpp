@@ -167,6 +167,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 	// 只有控制这个角色的客户端会接收到这个属性的更新
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME(ABlasterCharacter, CurrentHealth);
+	DOREPLIFETIME(ABlasterCharacter, CurrentShield);
 	DOREPLIFETIME(ABlasterCharacter, bDisableGamePlay);
 }
 
@@ -527,6 +528,14 @@ void ABlasterCharacter::UpdateHUDHealth()
 		BlasterPlayerController->SetHUDHealth(CurrentHealth, MaxHealth);
 }
 
+void ABlasterCharacter::UpdateHUDShield()
+{
+	BlasterPlayerController =
+		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController)
+		BlasterPlayerController->SetHUDShield(CurrentShield, MaxShield);
+}
+
 void ABlasterCharacter::PollInit()
 {
 	if (BlasterPlayerState == nullptr)
@@ -621,6 +630,13 @@ void ABlasterCharacter::OnRep_Health(float LastHealth)
 {
 	UpdateHUDHealth();
 	if (!bElimmed && CurrentHealth < LastHealth)
+		PlayHitReatMontage();
+}
+
+void ABlasterCharacter::OnRep_Shield(float LastShield)
+{
+	UpdateHUDShield();
+	if (!bElimmed && CurrentShield < LastShield)
 		PlayHitReatMontage();
 }
 
