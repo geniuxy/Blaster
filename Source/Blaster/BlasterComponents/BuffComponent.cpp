@@ -53,12 +53,16 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 
 void UBuffComponent::IncreaseSpeed(float BaseBuffSpeed, float CrouchBuffSpeed, float SpeedBuffTime)
 {
-	if (BlasterCharacter == nullptr || BlasterCharacter->GetCharacterMovement() == nullptr) return;
+	if (BlasterCharacter == nullptr || BlasterCharacter->GetCharacterMovement() == nullptr ||
+		BlasterCharacter->GetCombat() == nullptr)
+		return;
 
 	BlasterCharacter->GetWorldTimerManager().SetTimer(SpeedBuffTimer, this, &UBuffComponent::ResetSpeed, SpeedBuffTime);
 
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseBuffSpeed;
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchBuffSpeed;
+	BlasterCharacter->GetCombat()->SetBaseWalkSpeed(BaseBuffSpeed);
+	BlasterCharacter->GetCombat()->SetBaseCrouchSpeed(CrouchBuffSpeed);
 	MulticastSetSpeed(BaseBuffSpeed, CrouchBuffSpeed);
 }
 
@@ -70,13 +74,21 @@ void UBuffComponent::SetInitSpeed(float BaseSpeed, float CrouchSpeed)
 
 void UBuffComponent::ResetSpeed()
 {
+	if (BlasterCharacter == nullptr || BlasterCharacter->GetCharacterMovement() == nullptr ||
+		BlasterCharacter->GetCombat() == nullptr)
+		return;
+
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeed = InitBaseSpeed;
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = InitCrouchSpeed;
+	BlasterCharacter->GetCombat()->SetBaseWalkSpeed(InitBaseSpeed);
+	BlasterCharacter->GetCombat()->SetBaseCrouchSpeed(InitCrouchSpeed);
 	MulticastSetSpeed(InitBaseSpeed, InitCrouchSpeed);
 }
 
 void UBuffComponent::MulticastSetSpeed_Implementation(float BaseSpeed, float CrouchSpeed)
 {
+	if (BlasterCharacter == nullptr || BlasterCharacter->GetCharacterMovement() == nullptr) return;
+	
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeed = BaseSpeed;
 	BlasterCharacter->GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
 }

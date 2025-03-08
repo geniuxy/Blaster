@@ -241,5 +241,7 @@ private:
 	void UpdateHUDGrenades();
 
 public:
-	FORCEINLINE int32 GetGrenades() const {return Grenades;}
+	FORCEINLINE int32 GetGrenades() const { return Grenades; }
+	FORCEINLINE void SetBaseWalkSpeed(float SpeedOfBaseWalk) { BaseWalkSpeed = SpeedOfBaseWalk; }
+	FORCEINLINE void SetBaseCrouchSpeed(float SpeedOfBaseCrouch) { BaseCrouchWalkSpeed = SpeedOfBaseCrouch; }
 };
