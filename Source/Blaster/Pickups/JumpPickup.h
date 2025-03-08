@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "SpeedPickup.generated.h"
+#include "JumpPickup.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BLASTER_API ASpeedPickup : public APickup
+class BLASTER_API AJumpPickup : public APickup
 {
 	GENERATED_BODY()
 
@@ -26,11 +26,8 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	float BaseBuffSpeed = 1250.f;
+	float BuffJumpVelocity = 1500.f;
 
 	UPROPERTY(EditAnywhere)
-	float CrouchBuffSpeed = 750.f;
-
-	UPROPERTY(EditAnywhere)
-	float SpeedBuffTime = 10.f;
+	float JumpBuffTime = 12.f;
 };
