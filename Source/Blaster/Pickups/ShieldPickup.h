@@ -1,16 +1,16 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Pickup.h"
-#include "HealthPickup.generated.h"
+#include "ShieldPickup.generated.h"
 
-class UNiagaraSystem;
-class UNiagaraComponent;
-
+/**
+ * 
+ */
 UCLASS()
-class BLASTER_API AHealthPickup : public APickup
+class BLASTER_API AShieldPickup : public APickup
 {
 	GENERATED_BODY()
 
@@ -26,10 +26,9 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	float HealAmount = 100.f;
+	float ShieldAmount = 100.f;
 
 	UPROPERTY(EditAnywhere)
-	float HealingTime = 5.f;
-
-public:
+	float ReplenishShieldTime = 5.f;
+	
 };

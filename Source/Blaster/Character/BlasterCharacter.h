@@ -191,8 +191,8 @@ private:
 	UPROPERTY(EditAnywhere, Category= "Player Stats")
 	float MaxShield = 100.f;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Shield, VisibleAnywhere, Category= "Player Stats")
-	float CurrentShield = 100.f;
+	UPROPERTY(ReplicatedUsing=OnRep_Shield, EditAnywhere, Category= "Player Stats")
+	float CurrentShield = 0.f;
 	
 	UFUNCTION()
 	void OnRep_Shield(float LastShield);
@@ -274,6 +274,12 @@ public:
 	FORCEINLINE float GetCurrentHealth() const { return CurrentHealth; }
 
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	FORCEINLINE void SetCurrentShield(float ShieldAmount) { CurrentShield = ShieldAmount; }
+
+	FORCEINLINE float GetCurrentShield() const { return CurrentShield; }
+
+	FORCEINLINE float GetMaxShield() const { return MaxShield; }
 
 	ECombatState GetCombatState() const;
 

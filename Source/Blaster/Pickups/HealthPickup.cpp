@@ -3,17 +3,8 @@
 
 #include "HealthPickup.h"
 
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
-
-
-AHealthPickup::AHealthPickup()
-{
-	PrimaryActorTick.bCanEverTick = true;
-	bReplicates = true;
-}
 
 void AHealthPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,

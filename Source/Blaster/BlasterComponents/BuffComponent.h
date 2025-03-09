@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blaster/Pickups/HealthPickup.h"
 #include "Blaster/Pickups/JumpPickup.h"
+#include "Blaster/Pickups/ShieldPickup.h"
 #include "Blaster/Pickups/SpeedPickup.h"
 #include "Components/ActorComponent.h"
 #include "BuffComponent.generated.h"
@@ -26,6 +27,8 @@ public:
 
 	void Heal(float HealAmount, float HealingTime);
 	
+	void ReplenishShield(float ShieldAmount, float ReplenishShieldTime);
+	
 	void IncreaseSpeed(float BaseBuffSpeed, float CrouchBuffSpeed, float SpeedBuffTime);
 	void SetInitSpeed(float BaseSpeed, float CrouchSpeed);
 	
@@ -44,6 +47,12 @@ private:
 	float HealingRate = 0.f;
 	float AmountToHeal = 0.f;
 	void HealRampUp(float DeltaTime);
+
+	/** Shield */
+	bool bShielding = false;
+	float ShieldingRate = 0.f;
+	float AmountToShield = 0.f;
+	void ShieldRampUp(float DeltaTime);
 
 	/** Speed */
 	float InitBaseSpeed;

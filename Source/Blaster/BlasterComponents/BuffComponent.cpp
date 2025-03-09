@@ -24,6 +24,9 @@ void UBuffComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (bHealing)
 		HealRampUp(DeltaTime);
+
+	if (bShielding)
+		ShieldRampUp(DeltaTime);
 }
 
 void UBuffComponent::Heal(float HealAmount, float HealingTime)
@@ -31,6 +34,13 @@ void UBuffComponent::Heal(float HealAmount, float HealingTime)
 	bHealing = true;
 	HealingRate = HealAmount / HealingTime;
 	AmountToHeal += HealAmount;
+}
+
+void UBuffComponent::ReplenishShield(float ShieldAmount, float ReplenishShieldTime)
+{
+	bShielding = true;
+	ShieldingRate = ShieldAmount / ReplenishShieldTime;
+	AmountToShield += ShieldAmount;
 }
 
 void UBuffComponent::HealRampUp(float DeltaTime)
@@ -48,6 +58,24 @@ void UBuffComponent::HealRampUp(float DeltaTime)
 		bHealing = false;
 		AmountToHeal = 0.f;
 		HealingRate = 0.f;
+	}
+}
+
+void UBuffComponent::ShieldRampUp(float DeltaTime)
+{
+	if (BlasterCharacter == nullptr || BlasterCharacter->IsElimmed()) return;
+
+	const float ShieldingThisFrame = ShieldingRate * DeltaTime;
+	BlasterCharacter->SetCurrentShield(
+		FMath::Clamp(BlasterCharacter->GetCurrentShield() + ShieldingThisFrame, 0.f, BlasterCharacter->GetMaxShield()));
+	BlasterCharacter->UpdateHUDShield();
+	AmountToShield -= ShieldingThisFrame;
+
+	if (AmountToShield <= 0.f || BlasterCharacter->GetCurrentShield() >= BlasterCharacter->GetMaxShield())
+	{
+		bShielding = false;
+		AmountToShield = 0.f;
+		ShieldingRate = 0.f;
 	}
 }
 
