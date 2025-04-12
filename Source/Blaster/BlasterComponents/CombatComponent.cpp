@@ -259,8 +259,12 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		AttachActorToRightHand(EquippedWeapon);
 		// 播放捡枪声音
 		PlayEquipWeaponSound(EquippedWeapon);
+		// 服务端更新子弹数
+		EquippedWeapon->UpdateWeaponAmmo();
 		// 当装备上武器后，需要更新客户端client的HUD武器类型
 		UpdateCarriedWeaponType();
+		// 更新携带手榴弹HUD
+		UpdateHUDGrenades();
 
 		// 角色面向与运动方向相同(bOrientRotationToMovement)
 		PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;

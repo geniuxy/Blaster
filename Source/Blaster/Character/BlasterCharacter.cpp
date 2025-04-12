@@ -98,12 +98,12 @@ void ABlasterCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SpawnDefaultWeapon();
-	UpdateHUDAmmo();
 
 	BlasterPlayerController =
 		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 		BlasterPlayerController->HideHUDDeathMessage();
+	UpdateHUDAmmo();
 	UpdateHUDHealth();
 	UpdateHUDShield();
 	if (HasAuthority())
@@ -628,7 +628,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	StartDissolve();
 
 	// disable character movement
-	bDisableGamePlay = false;
+	bDisableGamePlay = true;
 	// 停止移动
 	GetCharacterMovement()->DisableMovement();
 	if (Combat)

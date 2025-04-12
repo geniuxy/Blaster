@@ -114,9 +114,8 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 
 void AWeapon::OnRep_Ammo()
 {
-	BlasterOwnerCharacter = IsValid(BlasterOwnerCharacter)
-		                        ? BlasterOwnerCharacter
-		                        : Cast<ABlasterCharacter>(GetOwner());
+	BlasterOwnerCharacter =
+		BlasterOwnerCharacter != nullptr ? BlasterOwnerCharacter : Cast<ABlasterCharacter>(GetOwner());
 	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull())
 		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
 	UpdateWeaponAmmo();
@@ -131,10 +130,10 @@ void AWeapon::SpendRound()
 void AWeapon::UpdateWeaponAmmo()
 {
 	BlasterOwnerCharacter =
-		IsValid(BlasterOwnerCharacter) ? BlasterOwnerCharacter : Cast<ABlasterCharacter>(GetOwner());
+		BlasterOwnerCharacter != nullptr ? BlasterOwnerCharacter : Cast<ABlasterCharacter>(GetOwner());
 	if (BlasterOwnerCharacter)
 	{
-		BlasterOwnerController = IsValid(BlasterOwnerController)
+		BlasterOwnerController = BlasterOwnerController != nullptr
 			                         ? BlasterOwnerController
 			                         : Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller);
 		if (BlasterOwnerController)
