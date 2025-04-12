@@ -250,7 +250,7 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::OnRep_EquippedWeapon()
 {
-	if (EquippedWeapon)
+	if (EquippedWeapon && PlayerCharacter)
 	{
 		// 这里调用SetWeaponState和AttachActor
 		// 是为了在client端，能够先调用SetWeaponState，再执行AttachActor
@@ -262,13 +262,10 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		// 当装备上武器后，需要更新客户端client的HUD武器类型
 		UpdateCarriedWeaponType();
 
-		if (PlayerCharacter)
-		{
-			// 角色面向与运动方向相同(bOrientRotationToMovement)
-			PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
-			// 面向与镜头方向相同(bUseControllerRotationYaw)
-			PlayerCharacter->bUseControllerRotationYaw = true;
-		}
+		// 角色面向与运动方向相同(bOrientRotationToMovement)
+		PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+		// 面向与镜头方向相同(bUseControllerRotationYaw)
+		PlayerCharacter->bUseControllerRotationYaw = true;
 	}
 }
 
