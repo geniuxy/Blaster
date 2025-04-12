@@ -26,6 +26,9 @@ public:
 	// friend class 可以访问所有的protected和private
 	friend class ABlasterCharacter;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AWeapon> StartingWeaponClass;
+
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
 	void Reload();

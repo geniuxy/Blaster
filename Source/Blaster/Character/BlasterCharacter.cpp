@@ -24,7 +24,7 @@ ABlasterCharacter::ABlasterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	
+
 	// 其他角色不应该挡住摄像头
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
@@ -57,7 +57,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	// 设置转身速率
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 850.f, 0.f);
-	
+
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
 	// 设置net更新频率
@@ -96,6 +96,9 @@ void ABlasterCharacter::Destroyed()
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
 
 	BlasterPlayerController = BlasterPlayerController == nullptr
 		                          ? Cast<ABlasterPlayerController>(Controller)
@@ -285,7 +288,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		}
 	}
 	CurrentHealth = FMath::Clamp(CurrentHealth - DamageToHealth, 0.f, MaxHealth);
-	
+
 	UpdateHUDHealth();
 	UpdateHUDShield();
 	if (!bElimmed)
@@ -553,6 +556,29 @@ void ABlasterCharacter::UpdateHUDShield()
 		BlasterPlayerController->SetHUDShield(CurrentShield, MaxShield);
 }
 
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController =
+		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController && Combat && Combat->EquippedWeapon)
+	{
+		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+}
+
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	UWorld* World = GetWorld();
+	if (BlasterGameMode && World && Combat)
+	{
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(Combat->StartingWeaponClass);
+		StartingWeapon->bDestroyWeapon = true;
+		Combat->EquipWeapon(StartingWeapon);
+	}
+}
+
 void ABlasterCharacter::PollInit()
 {
 	if (BlasterPlayerState == nullptr)
@@ -570,7 +596,12 @@ void ABlasterCharacter::PollInit()
 void ABlasterCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon)
-		Combat->EquippedWeapon->Dropped();
+	{
+		if (Combat->EquippedWeapon->bDestroyWeapon)
+			Combat->EquippedWeapon->Destroy();
+		else
+			Combat->EquippedWeapon->Dropped();
+	}
 
 	MulticastElim();
 

@@ -116,4 +116,8 @@ private:
 	int32 HUDDefeats;
 	bool bInitializeGrenades = false;
 	int32 HUDGrenades;
+	bool bInitializeWeaponAmmo = false;
+	int32 HUDWeaponAmmo;
+	bool bInitializeCarriedAmmo = false;
+	int32 HUDCarriedAmmo;
 };

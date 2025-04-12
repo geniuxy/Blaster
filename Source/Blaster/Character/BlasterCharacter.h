@@ -52,6 +52,9 @@ public:
 
 	void UpdateHUDHealth();
 	void UpdateHUDShield();
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWeapon();
 
 	UPROPERTY(Replicated)
 	bool bDisableGamePlay = false;
@@ -62,10 +65,9 @@ public:
 	virtual void Destroyed() override;
 
 protected:
-	UFUNCTION()
 	virtual void BeginPlay() override;
+	
 	void RotateInplace(float DeltaTime);
-
 	void MoveForward(float value);
 	void MoveRight(float value);
 	void Turn(float value);
