@@ -208,6 +208,9 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	// 更新携带弹药HUD
 	UpdateCarriedAmmo();
 
+	// 更新携带手榴弹HUD
+	UpdateHUDGrenades();
+
 	// 更新携带武器类型HUD
 	UpdateCarriedWeaponType();
 

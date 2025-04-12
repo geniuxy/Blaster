@@ -100,9 +100,8 @@ void ABlasterCharacter::BeginPlay()
 	SpawnDefaultWeapon();
 	UpdateHUDAmmo();
 
-	BlasterPlayerController = BlasterPlayerController == nullptr
-		                          ? Cast<ABlasterPlayerController>(Controller)
-		                          : BlasterPlayerController;
+	BlasterPlayerController =
+		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 		BlasterPlayerController->HideHUDDeathMessage();
 	UpdateHUDHealth();
