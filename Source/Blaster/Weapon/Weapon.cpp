@@ -83,7 +83,16 @@ void AWeapon::OnRep_Owner()
 		BlasterOwnerController = nullptr;
 	}
 	else
-		UpdateWeaponAmmo();
+	{
+		BlasterOwnerCharacter =
+			BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(Owner) : BlasterOwnerCharacter;
+		if (BlasterOwnerCharacter &&
+			BlasterOwnerCharacter->GetEquippedWeapon() &&
+			BlasterOwnerCharacter->GetEquippedWeapon() == this)
+		{
+			UpdateWeaponAmmo();
+		}
+	}
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -121,9 +130,8 @@ void AWeapon::SpendRound()
 
 void AWeapon::UpdateWeaponAmmo()
 {
-	BlasterOwnerCharacter = IsValid(BlasterOwnerCharacter)
-		                        ? BlasterOwnerCharacter
-		                        : Cast<ABlasterCharacter>(GetOwner());
+	BlasterOwnerCharacter =
+		IsValid(BlasterOwnerCharacter) ? BlasterOwnerCharacter : Cast<ABlasterCharacter>(GetOwner());
 	if (BlasterOwnerCharacter)
 	{
 		BlasterOwnerController = IsValid(BlasterOwnerController)
@@ -151,7 +159,6 @@ void AWeapon::SetWeaponState(EWeaponState State)
 			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 		}
-		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority())
@@ -185,7 +192,6 @@ void AWeapon::OnRep_WeaponState()
 			WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 			WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 		}
-		EnableCustomDepth(false);
 		break;
 	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetSimulatePhysics(true);

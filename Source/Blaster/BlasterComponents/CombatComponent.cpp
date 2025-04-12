@@ -27,6 +27,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
+	DOREPLIFETIME(UCombatComponent, SecondaryWeapon);
 	DOREPLIFETIME(UCombatComponent, bAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
@@ -194,10 +195,26 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (PlayerCharacter == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
 
+	if (EquippedWeapon && !SecondaryWeapon)
+		EquipSecondaryWeapon(WeaponToEquip);
+	else
+		EquipPrimaryWeapon(WeaponToEquip);
+
+	// 角色面向与运动方向相同(bOrientRotationToMovement)
+	PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+	// 面向与镜头方向相同(bUseControllerRotationYaw)
+	PlayerCharacter->bUseControllerRotationYaw = true;
+}
+
+void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+
 	DropEquippedWeapon();
 	EquippedWeapon = WeaponToEquip;
 	// 这边WeaponState属性改变了之后，通过OnRep方法可以通知client进行操作
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	EquippedWeapon->EnableCustomDepth(false);
 
 	AttachActorToRightHand(WeaponToEquip);
 	// 这个SetOwner方法可以看定义，当服务器端调用SetOwner的时候，会通知客户端
@@ -207,43 +224,66 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 	// 更新携带弹药HUD
 	UpdateCarriedAmmo();
-
 	// 更新携带手榴弹HUD
 	UpdateHUDGrenades();
-
 	// 更新携带武器类型HUD
 	UpdateCarriedWeaponType();
-
 	// 播放捡枪声音
-	PlayEquipWeaponSound();
-
+	PlayEquipWeaponSound(EquippedWeapon);
 	// 如果捡起来的武器没子弹了，自动换弹
 	ReloadEmptyWeapon();
+}
 
-	// 角色面向与运动方向相同(bOrientRotationToMovement)
-	PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
-	// 面向与镜头方向相同(bUseControllerRotationYaw)
-	PlayerCharacter->bUseControllerRotationYaw = true;
+void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
+{
+	if (!WeaponToEquip) return;
+
+	SecondaryWeapon = WeaponToEquip;
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToBackPack(WeaponToEquip);
+	if (SecondaryWeapon->GetWeaponMesh())
+	{
+		SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+		SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
+	}
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
 {
-	if (EquippedWeapon && PlayerCharacter)
+	if (EquippedWeapon)
 	{
 		// 这里调用SetWeaponState和AttachActor
 		// 是为了在client端，能够先调用SetWeaponState，再执行AttachActor
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		EquippedWeapon->EnableCustomDepth(false);
 		AttachActorToRightHand(EquippedWeapon);
-		// 角色面向与运动方向相同(bOrientRotationToMovement)
-		PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
-		// 面向与镜头方向相同(bUseControllerRotationYaw)
-		PlayerCharacter->bUseControllerRotationYaw = true;
-
 		// 播放捡枪声音
-		PlayEquipWeaponSound();
-
+		PlayEquipWeaponSound(EquippedWeapon);
 		// 当装备上武器后，需要更新客户端client的HUD武器类型
 		UpdateCarriedWeaponType();
+
+		if (PlayerCharacter)
+		{
+			// 角色面向与运动方向相同(bOrientRotationToMovement)
+			PlayerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+			// 面向与镜头方向相同(bUseControllerRotationYaw)
+			PlayerCharacter->bUseControllerRotationYaw = true;
+		}
+	}
+}
+
+void UCombatComponent::OnRep_SecondaryWeapon()
+{
+	if (SecondaryWeapon && PlayerCharacter)
+	{
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		AttachActorToBackPack(SecondaryWeapon);
+		PlayEquipWeaponSound(SecondaryWeapon);
+		if (SecondaryWeapon->GetWeaponMesh())
+		{
+			SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
+			SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
+		}
 	}
 }
 
@@ -275,6 +315,14 @@ void UCombatComponent::AttachActorToLeftHand(AActor* ActorToAttach)
 		HandSocket->AttachActor(ActorToAttach, PlayerCharacter->GetMesh());
 }
 
+void UCombatComponent::AttachActorToBackPack(AActor* ActorToAttach)
+{
+	if (PlayerCharacter == nullptr || PlayerCharacter->GetMesh() == nullptr || ActorToAttach == nullptr) return;
+	const USkeletalMeshSocket* BackPackSocket = PlayerCharacter->GetMesh()->GetSocketByName(FName("BackPackSocket"));
+	if (BackPackSocket)
+		BackPackSocket->AttachActor(ActorToAttach, PlayerCharacter->GetMesh());
+}
+
 void UCombatComponent::UpdateCarriedAmmo()
 {
 	if (EquippedWeapon == nullptr) return;
@@ -298,10 +346,10 @@ void UCombatComponent::UpdateCarriedWeaponType()
 		PlayerController->SetHUDCarriedWeaponType(EquippedWeapon->GetWeaponType());
 }
 
-void UCombatComponent::PlayEquipWeaponSound()
+void UCombatComponent::PlayEquipWeaponSound(AWeapon* WeaponToEquip)
 {
-	if (PlayerCharacter && EquippedWeapon && EquippedWeapon->EquipSound)
-		UGameplayStatics::PlaySoundAtLocation(this, EquippedWeapon->EquipSound, PlayerCharacter->GetActorLocation());
+	if (PlayerCharacter && WeaponToEquip && WeaponToEquip->EquipSound)
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponToEquip->EquipSound, PlayerCharacter->GetActorLocation());
 }
 
 void UCombatComponent::ReloadEmptyWeapon()

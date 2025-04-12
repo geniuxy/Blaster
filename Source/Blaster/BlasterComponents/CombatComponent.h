@@ -30,6 +30,8 @@ public:
 	TSubclassOf<AWeapon> StartingWeaponClass;
 
 	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
 
 	void Reload();
 
@@ -64,13 +66,17 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+	
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
 
 	void DropEquippedWeapon();
 	void AttachActorToRightHand(AActor* ActorToAttach);
 	void AttachActorToLeftHand(AActor* ActorToAttach);
+	void AttachActorToBackPack(AActor* ActorToAttach);
 	void UpdateCarriedAmmo();
 	void UpdateCarriedWeaponType();
-	void PlayEquipWeaponSound();
+	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
 	void ReloadEmptyWeapon();
 	void ShowAttachedGrenade(bool bShowGrenade);
 
@@ -116,10 +122,12 @@ private:
 	UPROPERTY()
 	ABlasterHUD* HUD;
 
-	// 只会在server端被赋值，client端都为nullptr
 	UPROPERTY(ReplicatedUsing= OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
 
+	UPROPERTY(ReplicatedUsing= OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
+	
 	UPROPERTY(Replicated)
 	bool bAiming;
 

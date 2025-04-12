@@ -342,14 +342,7 @@ void ABlasterCharacter::LookUp(float value)
 void ABlasterCharacter::EquipButtonPressed()
 {
 	if (bDisableGamePlay) return;
-	if (Combat)
-	{
-		if (HasAuthority())
-			Combat->EquipWeapon(OverlappingWeapon);
-		else
-			// 如果不是server服务端的话，需要调用RPC方法
-			ServerEquipButtonPressed();
-	}
+	ServerEquipButtonPressed();
 }
 
 void ABlasterCharacter::CrouchButtonPressed()
@@ -570,7 +563,7 @@ void ABlasterCharacter::SpawnDefaultWeapon()
 {
 	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	UWorld* World = GetWorld();
-	if (BlasterGameMode && World && Combat)
+	if (BlasterGameMode && World && Combat && Combat->StartingWeaponClass)
 	{
 		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(Combat->StartingWeaponClass);
 		StartingWeapon->bDestroyWeapon = true;
