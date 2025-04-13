@@ -479,7 +479,12 @@ void ABlasterCharacter::ThrowGrenadeButtonPressed()
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
-		Combat->EquipWeapon(OverlappingWeapon);
+	{
+		if (OverlappingWeapon)
+			Combat->EquipWeapon(OverlappingWeapon);
+		else if (Combat->ShouldSwapWeapons())
+			Combat->SwapWeapons();
+	}
 }
 
 void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)

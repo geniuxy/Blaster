@@ -33,6 +33,9 @@ public:
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
 
+	void SwapWeapons();
+	bool ShouldSwapWeapons();
+
 	void Reload();
 
 	UFUNCTION(BlueprintCallable)

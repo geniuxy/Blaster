@@ -214,7 +214,6 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon = WeaponToEquip;
 	// 这边WeaponState属性改变了之后，通过OnRep方法可以通知client进行操作
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	EquippedWeapon->EnableCustomDepth(false);
 
 	AttachActorToRightHand(WeaponToEquip);
 	// 这个SetOwner方法可以看定义，当服务器端调用SetOwner的时候，会通知客户端
@@ -239,13 +238,33 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	if (!WeaponToEquip) return;
 
 	SecondaryWeapon = WeaponToEquip;
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackPack(WeaponToEquip);
-	if (SecondaryWeapon->GetWeaponMesh())
-	{
-		SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
-		SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-	}
+	PlayEquipWeaponSound(SecondaryWeapon);
+	SecondaryWeapon->SetOwner(PlayerCharacter);
+}
+
+void UCombatComponent::SwapWeapons()
+{
+	AWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	PlayEquipWeaponSound(EquippedWeapon);
+	EquippedWeapon->UpdateWeaponAmmo();
+	UpdateCarriedWeaponType();
+	UpdateCarriedAmmo();
+	UpdateHUDGrenades();
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackPack(SecondaryWeapon);
+}
+
+bool UCombatComponent::ShouldSwapWeapons()
+{
+	return EquippedWeapon && SecondaryWeapon;
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
@@ -255,14 +274,15 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		// 这里调用SetWeaponState和AttachActor
 		// 是为了在client端，能够先调用SetWeaponState，再执行AttachActor
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		EquippedWeapon->EnableCustomDepth(false);
+		
 		AttachActorToRightHand(EquippedWeapon);
 		// 播放捡枪声音
 		PlayEquipWeaponSound(EquippedWeapon);
-		// 服务端更新子弹数
+		// 更新子弹数
 		EquippedWeapon->UpdateWeaponAmmo();
 		// 当装备上武器后，需要更新客户端client的HUD武器类型
 		UpdateCarriedWeaponType();
+		UpdateCarriedAmmo();
 		// 更新携带手榴弹HUD
 		UpdateHUDGrenades();
 
@@ -277,14 +297,9 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 {
 	if (SecondaryWeapon && PlayerCharacter)
 	{
-		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 		AttachActorToBackPack(SecondaryWeapon);
 		PlayEquipWeaponSound(SecondaryWeapon);
-		if (SecondaryWeapon->GetWeaponMesh())
-		{
-			SecondaryWeapon->GetWeaponMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
-			SecondaryWeapon->GetWeaponMesh()->MarkRenderStateDirty();
-		}
 	}
 }
 
