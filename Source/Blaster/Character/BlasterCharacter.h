@@ -47,6 +47,9 @@ public:
 
 	void Elim();
 
+	void DropOrDestroyWeapons();
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
