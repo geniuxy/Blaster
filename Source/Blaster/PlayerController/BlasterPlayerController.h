@@ -55,6 +55,11 @@ protected:
 
 	void PollInit();
 
+	void CheckPing(float DeltaSeconds);
+
+	void HighPingWarning();
+	void StopHighPingWarning();
+
 	/**
 	 * Sync time between client and server
 	 */
@@ -103,7 +108,7 @@ private:
 
 	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
-	
+
 	bool bInitializeHealth = false;
 	float HUDCurrentHealth;
 	float HUDMaxHealth;
@@ -120,4 +125,17 @@ private:
 	int32 HUDWeaponAmmo;
 	bool bInitializeCarriedAmmo = false;
 	int32 HUDCarriedAmmo;
+
+	float HighPingRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;
+
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 50.f;
+
+	float PingAnimationRunningTime = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f; 
 };
