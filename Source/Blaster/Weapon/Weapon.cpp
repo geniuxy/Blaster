@@ -49,15 +49,15 @@ void AWeapon::BeginPlay()
 
 	// 只有在服务器上可以检测是否捡武器
 	// <==> if (GetLocalRole() == ROLE_Authority)
-	if (HasAuthority())
-	{
-		AreaSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		// 用来人物靠近时，显示pickup提示
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
-		// 用来人物离开时，不显示pickup提示
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnSphereEndOverlap);
-	}
+	// if (HasAuthority())
+	// {
+	AreaSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// 用来人物靠近时，显示pickup提示
+	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
+	// 用来人物离开时，不显示pickup提示
+	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnSphereEndOverlap);
+	// }
 }
 
 void AWeapon::Tick(float DeltaTime)
