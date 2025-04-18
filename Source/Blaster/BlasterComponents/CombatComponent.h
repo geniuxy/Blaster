@@ -84,6 +84,7 @@ protected:
 	void ShowAttachedGrenade(bool bShowGrenade);
 
 	void Fire();
+	void LocalFire(const FVector_NetQuantize& TracerHitTarget);
 
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。
 	// 是FVector的一个派生（子）类

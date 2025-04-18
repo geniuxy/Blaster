@@ -260,9 +260,11 @@ void AWeapon::Fire(const FVector& HitTarget)
 				                           SocketTransform.GetRotation().Rotator());
 		}
 	}
-
-	// 子弹量减一 
-	SpendRound();
+	if (HasAuthority())
+	{
+		// 子弹量减一 
+		SpendRound();
+	}
 }
 
 void AWeapon::Dropped()
