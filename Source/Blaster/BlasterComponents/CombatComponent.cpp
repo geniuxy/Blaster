@@ -133,12 +133,48 @@ void UCombatComponent::Fire()
 	if (CanFire())
 	{
 		bCanFire = false;
-		ServerFire(HitTarget);
-		LocalFire(HitTarget);
 		if (EquippedWeapon)
+		{
 			CrosshairShootingFactor = 0.75f;
+
+			switch (EquippedWeapon->FireType)
+			{
+			case EFireType::EFT_ProjectileWeapon:
+				FireProjectileWeapon();
+				break;
+			case EFireType::EFT_HitScanWeapon:
+				FireHitScanWeapon();
+				break;
+			case EFireType::EFT_Shotgun:
+				FireShotgun();
+				break;
+			default:
+				break;
+			}
+		}
 		StartFireTimer();
 	}
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	LocalFire(HitTarget);
+	ServerFire(HitTarget);
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon)
+	{
+		// Fire之前就先计算好HitTarget，确保客户端和服务端HitTarget相同
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget);
+		ServerFire(HitTarget);
+	}
+}
+
+void UCombatComponent::FireShotgun()
+{
 }
 
 bool UCombatComponent::CanFire()
@@ -282,7 +318,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		// 这里调用SetWeaponState和AttachActor
 		// 是为了在client端，能够先调用SetWeaponState，再执行AttachActor
 		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-		
+
 		AttachActorToRightHand(EquippedWeapon);
 		// 播放捡枪声音
 		PlayEquipWeaponSound(EquippedWeapon);
@@ -353,9 +389,9 @@ void UCombatComponent::UpdateCarriedAmmo()
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 }
@@ -363,9 +399,9 @@ void UCombatComponent::UpdateCarriedAmmo()
 void UCombatComponent::UpdateCarriedWeaponType()
 {
 	if (EquippedWeapon == nullptr) return;
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedWeaponType(EquippedWeapon->GetWeaponType());
 }
@@ -459,9 +495,9 @@ void UCombatComponent::UpdateAmmoValue()
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 	}
 	// 调整CarriedAmmo数量和HUD
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
@@ -478,9 +514,9 @@ void UCombatComponent::UpdateShotgunAmmoValue()
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 	}
 	// 调整CarriedAmmo数量和HUD
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
@@ -539,8 +575,9 @@ void UCombatComponent::OnRep_Grenades()
 void UCombatComponent::UpdateHUDGrenades()
 {
 	// 调整CarriedAmmo数量和HUD
-	PlayerController =
-		PlayerController == nullptr ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller) : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDGrenades(Grenades);
 }
@@ -581,9 +618,9 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 
 void UCombatComponent::OnRep_CarriedAmmo()
 {
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
@@ -646,9 +683,9 @@ void UCombatComponent::SetHUDCrosshair(float DeltaTime)
 {
 	if (PlayerCharacter == nullptr || PlayerCharacter->Controller == nullptr) return;
 
-	PlayerController = PlayerController == nullptr
-		                   ? Cast<ABlasterPlayerController>(PlayerCharacter->Controller)
-		                   : PlayerController;
+	PlayerController = IsValid(PlayerController)
+						   ? PlayerController
+						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 	{
 		HUD = HUD == nullptr ? Cast<ABlasterHUD>(PlayerController->GetHUD()) : HUD;

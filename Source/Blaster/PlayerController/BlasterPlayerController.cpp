@@ -219,6 +219,11 @@ void ABlasterPlayerController::SetHUDCarriedWeaponType(EWeaponType WeaponType)
 		}
 		BlasterHUD->CharacterOverlay->CarriedWeaponType->SetText(FText::FromString(WeaponTypeText));
 	}
+	else
+	{
+		bInitializeWeaponType = true;
+		HUDWeaponType = WeaponType;
+	}
 }
 
 void ABlasterPlayerController::SetHUDMatchCountDown(float CountDown)
@@ -328,6 +333,7 @@ void ABlasterPlayerController::PollInit()
 				if (bInitializeDefeats) SetHUDDefeats(HUDDefeats);
 				if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
 				if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+				if (bInitializeWeaponType) SetHUDCarriedWeaponType(HUDWeaponType);
 
 				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
 				if (BlasterCharacter && BlasterCharacter->GetCombat())

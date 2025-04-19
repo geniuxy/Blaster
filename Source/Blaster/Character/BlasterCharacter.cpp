@@ -97,15 +97,16 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpawnDefaultWeapon();
-
 	BlasterPlayerController =
 		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 	if (BlasterPlayerController)
 		BlasterPlayerController->HideHUDDeathMessage();
+	
+	SpawnDefaultWeapon();
 	UpdateHUDAmmo();
 	UpdateHUDHealth();
 	UpdateHUDShield();
+	
 	if (HasAuthority())
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	if (AttachGrenade)

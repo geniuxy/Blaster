@@ -125,6 +125,8 @@ private:
 	int32 HUDWeaponAmmo;
 	bool bInitializeCarriedAmmo = false;
 	int32 HUDCarriedAmmo;
+	bool bInitializeWeaponType = false;
+	EWeaponType HUDWeaponType;
 
 	float HighPingRunningTime = 0.f;
 

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/HUD/BlasterHUD.h"
-#include "Blaster/Pickups/AmmoPickup.h"
 #include "Blaster/Weapon/Weapon.h"
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/ActorComponent.h"
@@ -84,6 +83,9 @@ protected:
 	void ShowAttachedGrenade(bool bShowGrenade);
 
 	void Fire();
+	void FireProjectileWeapon();
+	void FireHitScanWeapon();
+	void FireShotgun();
 	void LocalFire(const FVector_NetQuantize& TracerHitTarget);
 
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。

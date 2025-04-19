@@ -10,16 +10,6 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeaponState:uint8
-{
-	EWS_Initial UMETA(DisplayName = "Initial State"),
-	EWS_Equipped UMETA(DisplayName = "Equipped State"),
-	EWS_EquippedSecondary UMETA(DisplayName = "Equipped Secondary State"),
-	EWS_Dropped UMETA(DisplayName = "Dropped State"),
-	EWS_Max UMETA(DisplayName = "Default Max State")
-};
-
 UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
@@ -43,6 +33,8 @@ public:
 	void Dropped();
 
 	void AddAmmo(int32 AmountToAdd);
+
+	FVector TraceEndWithScatter(const FVector& HitTarget);
 
 	/**
 	 *	Textures for the weapon crosshairs
@@ -92,6 +84,12 @@ public:
 	void EnableCustomDepth(bool bEnable);
 
 	bool bDestroyWeapon = false;
+
+	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
+	bool bUseScatter = false;
 
 protected:
 	virtual void BeginPlay() override;
@@ -164,6 +162,16 @@ private:
 	void OnRep_Ammo();
 
 	void SpendRound();
+
+	/**
+	 * Trace end with scatter
+	 */
+
+	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
+	float DistanceToSphere = 800.f; // 散弹枪最远射程
+
+	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
+	float SphereRadius = 75.f; // 散弹枪散射半径
 
 public:
 	// 可用于服务端对weaponstate进行改变，以及其他属性的操作

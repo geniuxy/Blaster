@@ -17,7 +17,6 @@ class BLASTER_API AHitScanWeapon : public AWeapon
 public:
 	virtual void Fire(const FVector& HitTarget) override;
 
-	virtual FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
 	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
 protected:
@@ -38,19 +37,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	USoundCue* HitSound;
-
-	/**
-	 * Trace end with scatter
-	 */
-
-	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
-	float DistanceToSphere = 800.f; // 散弹枪最远射程
-
-	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
-	float SphereRadius = 75.f; // 散弹枪散射半径
-
-	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
-	bool bUseScatter = false;
 
 private:
 };
