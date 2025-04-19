@@ -87,7 +87,8 @@ protected:
 	void FireHitScanWeapon();
 	void FireShotgun();
 	void LocalFire(const FVector_NetQuantize& TracerHitTarget);
-
+	void LocalShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。
 	// 是FVector的一个派生（子）类
 	// 缩放后的浮点数值四舍五入到最接近的整数值
@@ -97,6 +98,12 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TracerHitTarget);
+
+	UFUNCTION(Server, Reliable)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	void TraceUnderCrosshair(FHitResult& TraceHitResult);
 
