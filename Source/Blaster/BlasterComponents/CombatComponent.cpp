@@ -6,6 +6,7 @@
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/Weapon/Projectile.h"
+#include "Blaster/Weapon/Shotgun.h"
 #include "Components/BoxComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -158,8 +159,13 @@ void UCombatComponent::Fire()
 
 void UCombatComponent::FireProjectileWeapon()
 {
-	LocalFire(HitTarget);
-	ServerFire(HitTarget);
+	if (EquippedWeapon)
+	{
+		// Fire之前就先计算好HitTarget，确保客户端和服务端HitTarget相同
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		LocalFire(HitTarget);
+		ServerFire(HitTarget);
+	}
 }
 
 void UCombatComponent::FireHitScanWeapon()
@@ -175,6 +181,12 @@ void UCombatComponent::FireHitScanWeapon()
 
 void UCombatComponent::FireShotgun()
 {
+	AShotgun* Shotgun = Cast<AShotgun>(EquippedWeapon);
+	if (Shotgun)
+	{
+		TArray<FVector> HitTargets;
+		Shotgun->ShotgunTraceEndWithScatter(HitTarget, HitTargets);
+	}
 }
 
 bool UCombatComponent::CanFire()
@@ -390,8 +402,8 @@ void UCombatComponent::UpdateCarriedAmmo()
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
 
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 }
@@ -496,8 +508,8 @@ void UCombatComponent::UpdateAmmoValue()
 	}
 	// 调整CarriedAmmo数量和HUD
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
@@ -515,8 +527,8 @@ void UCombatComponent::UpdateShotgunAmmoValue()
 	}
 	// 调整CarriedAmmo数量和HUD
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
@@ -576,8 +588,8 @@ void UCombatComponent::UpdateHUDGrenades()
 {
 	// 调整CarriedAmmo数量和HUD
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDGrenades(Grenades);
 }
@@ -619,8 +631,8 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 void UCombatComponent::OnRep_CarriedAmmo()
 {
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
 	bool bJumpToShotgunEnd = CombatState == ECombatState::ECS_Reloading &&
@@ -684,8 +696,8 @@ void UCombatComponent::SetHUDCrosshair(float DeltaTime)
 	if (PlayerCharacter == nullptr || PlayerCharacter->Controller == nullptr) return;
 
 	PlayerController = IsValid(PlayerController)
-						   ? PlayerController
-						   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
+		                   ? PlayerController
+		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 	{
 		HUD = HUD == nullptr ? Cast<ABlasterHUD>(PlayerController->GetHUD()) : HUD;

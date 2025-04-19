@@ -115,6 +115,16 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
+	
+	/**
+	 * Trace end with scatter
+	 */
+
+	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
+	float DistanceToSphere = 800.f; // 散弹枪最远射程
+
+	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
+	float SphereRadius = 75.f; // 散弹枪散射半径
 
 private:
 	UPROPERTY()
@@ -162,16 +172,6 @@ private:
 	void OnRep_Ammo();
 
 	void SpendRound();
-
-	/**
-	 * Trace end with scatter
-	 */
-
-	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
-	float DistanceToSphere = 800.f; // 散弹枪最远射程
-
-	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
-	float SphereRadius = 75.f; // 散弹枪散射半径
 
 public:
 	// 可用于服务端对weaponstate进行改变，以及其他属性的操作
