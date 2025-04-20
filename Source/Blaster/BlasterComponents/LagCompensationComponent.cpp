@@ -56,7 +56,7 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 		HitCharacter->GetLagCompensation()->FrameHistory.GetHead() == nullptr ||
 		HitCharacter->GetLagCompensation()->FrameHistory.GetTail() == nullptr;
 	if (bReturn) return;
-	
+
 	// Frame package that we check to verify a hit
 	FFramePackage FrameToCheck;
 	bool bShouldInterpolate = true;
@@ -70,12 +70,12 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 	}
 	if (OldestHistoryTime == HitTime)
 	{
-		FrameToCheck =  History.GetTail()->GetValue();
+		FrameToCheck = History.GetTail()->GetValue();
 		bShouldInterpolate = false;
 	}
 	if (NewestHistoryTime <= HitTime)
 	{
-		FrameToCheck =  History.GetHead()->GetValue();
+		FrameToCheck = History.GetHead()->GetValue();
 		bShouldInterpolate = false;
 	}
 
@@ -100,6 +100,37 @@ void ULagCompensationComponent::ServerSideRewind(ABlasterCharacter* HitCharacter
 	{
 		// Interpolate between Younger and Older
 	}
+}
+
+FFramePackage ULagCompensationComponent::InterpBetweenFrames(
+	const FFramePackage& OlderFrame,
+	const FFramePackage& YoungerFrame,
+	float HitTime)
+{
+	const float Distance = YoungerFrame.Time - OlderFrame.Time;
+	const float InterpFraction = FMath::Clamp((HitTime - OlderFrame.Time) / Distance, 0.f, 1.f);
+
+	FFramePackage InterpFramePackage;
+	InterpFramePackage.Time = HitTime;
+
+	for (auto& YoungerPair : YoungerFrame.HitBoxInfo)
+	{
+		const FName& BoxInfoName = YoungerPair.Key;
+
+		const FBoxInformation& OlderBox = OlderFrame.HitBoxInfo[BoxInfoName];
+		const FBoxInformation& YoungerBox = YoungerFrame.HitBoxInfo[BoxInfoName];
+
+		FBoxInformation InterpBoxInfo;
+
+		// 这里的deltatime = 1.f，是指OlderBox到YoungerBox的距离假设为1，InterpBox到OlderBox则为InterpFraction
+		InterpBoxInfo.Location = FMath::VInterpTo(OlderBox.Location, YoungerBox.Location, 1.f, InterpFraction);
+		InterpBoxInfo.Rotation = FMath::RInterpTo(OlderBox.Rotation, YoungerBox.Rotation, 1.f, InterpFraction);
+		InterpBoxInfo.BoxExtent = YoungerBox.BoxExtent;
+
+		InterpFramePackage.HitBoxInfo.Add(BoxInfoName, InterpBoxInfo);
+	}
+
+	return InterpFramePackage;
 }
 
 void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickType,
