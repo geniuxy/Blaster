@@ -48,6 +48,12 @@ public:
 
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
 
+	void ServerSideRewind(
+		ABlasterCharacter* HitCharacter, 
+		const FVector_NetQuantize& TraceStart, 
+		const FVector_NetQuantize& HitLocation, 
+		float HitTime);
+
 protected:
 	virtual void BeginPlay() override;
 
