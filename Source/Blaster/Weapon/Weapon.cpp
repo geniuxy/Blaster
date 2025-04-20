@@ -71,7 +71,6 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeapon, WeaponState);
-	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 void AWeapon::OnRep_Owner()
@@ -113,18 +112,43 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		BlasterCharacter->SetOverlappingWeapon(nullptr);
 }
 
-void AWeapon::OnRep_Ammo()
-{
-	BlasterOwnerCharacter =
-		BlasterOwnerCharacter != nullptr ? BlasterOwnerCharacter : Cast<ABlasterCharacter>(GetOwner());
-	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull())
-		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
-	UpdateWeaponAmmo();
-}
-
 void AWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
+	UpdateWeaponAmmo();
+	if (HasAuthority())
+		ClientUpdateAmmo(Ammo);
+	else
+	{
+		++Sequence;
+	}
+}
+
+void AWeapon::ClientUpdateAmmo_Implementation(int32 ServeAmmo)
+{
+	if (HasAuthority()) return;
+	Ammo = ServeAmmo;
+	--Sequence;
+	Ammo -= Sequence;
+	UpdateWeaponAmmo();
+}
+
+void AWeapon::AddAmmo(int32 AmountToAdd)
+{
+	Ammo = FMath::Clamp(Ammo + AmountToAdd, 0, MagCapacity);
+	UpdateWeaponAmmo();
+	ClientAddAmmo(AmountToAdd);
+}
+
+void AWeapon::ClientAddAmmo_Implementation(int32 AmountToAdd)
+{
+	if (HasAuthority()) return;
+	Ammo = FMath::Clamp(Ammo + AmountToAdd, 0, MagCapacity);
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetCombat() && IsFull())
+	{
+		BlasterOwnerCharacter->GetCombat()->JumpToShotgunEnd();
+	}
 	UpdateWeaponAmmo();
 }
 
@@ -261,11 +285,8 @@ void AWeapon::Fire(const FVector& HitTarget)
 				                           SocketTransform.GetRotation().Rotator());
 		}
 	}
-	if (HasAuthority())
-	{
-		// 子弹量减一 
-		SpendRound();
-	}
+	// 子弹量减一 
+	SpendRound();
 }
 
 void AWeapon::Dropped()
@@ -276,12 +297,6 @@ void AWeapon::Dropped()
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
-}
-
-void AWeapon::AddAmmo(int32 AmountToAdd)
-{
-	Ammo = FMath::Clamp(Ammo + AmountToAdd, 0, MagCapacity);
-	UpdateWeaponAmmo();
 }
 
 FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)

@@ -162,16 +162,23 @@ private:
 	 * Weapon Ammo
 	 */
 
-	UPROPERTY(EditAnywhere, ReplicatedUsing=OnRep_Ammo)
-	int32 Ammo;
-
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
 
-	UFUNCTION()
-	void OnRep_Ammo();
+	UPROPERTY(EditAnywhere)
+	int32 Ammo;
+
+	// The number of unprocessed server requests for Ammo.
+	// Incremented in SpendRound, decremented in ClientUpdateAmmo.
+	int32 Sequence = 0;
 
 	void SpendRound();
+
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServeAmmo);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmountToAdd);
 
 public:
 	// 可用于服务端对weaponstate进行改变，以及其他属性的操作

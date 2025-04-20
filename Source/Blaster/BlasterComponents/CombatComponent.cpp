@@ -532,7 +532,7 @@ void UCombatComponent::UpdateAmmoValue()
 		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
-	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
+	// 调整Ammo数量和HUD
 	EquippedWeapon->AddAmmo(ReloadAmmoAmount);
 }
 
@@ -551,7 +551,7 @@ void UCombatComponent::UpdateShotgunAmmoValue()
 		                   : Cast<ABlasterPlayerController>(PlayerCharacter->Controller);
 	if (PlayerController)
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
-	// 调整Ammo数量和HUD(由于Ammo是可复制的，因此在OnRep中会更新HUD)
+	// 调整Ammo数量和HUD
 	EquippedWeapon->AddAmmo(1);
 	bCanFire = true;
 	if (EquippedWeapon->IsFull() || CarriedAmmo == 0)
