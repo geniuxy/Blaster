@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairInterface.h"
 #include "Blaster/Weapon/Weapon.h"
@@ -15,6 +15,8 @@
 #include "Sound/SoundCue.h"
 #include "BlasterCharacter.generated.h"
 
+class UCombatComponent;
+class ULagCompensationComponent;
 class UBuffComponent;
 
 UCLASS()
@@ -57,6 +59,8 @@ public:
 	void UpdateHUDShield();
 	void UpdateHUDAmmo();
 
+	ECombatState GetCombatState() const;
+	
 	void SpawnDefaultWeapon();
 
 	UPROPERTY(Replicated)
@@ -189,6 +193,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
 	UBuffComponent* Buff;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	ULagCompensationComponent* LagCompensation;
 
 	// RPC client调用server去捡装备
 	// 需要指定RPC是否reliable，reliable的话会重复发请求
@@ -345,8 +352,6 @@ public:
 	FORCEINLINE float GetCurrentShield() const { return CurrentShield; }
 
 	FORCEINLINE float GetMaxShield() const { return MaxShield; }
-
-	ECombatState GetCombatState() const;
 
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 

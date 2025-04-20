@@ -11,6 +11,8 @@
 #include "Blaster/Blaster.h"
 #include "TimerManager.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
 #include "Blaster/HUD/OverHeadWidget.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
@@ -53,6 +55,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Buff = CreateDefaultSubobject<UBuffComponent>(TEXT("BuffComponent"));
 	Buff->SetIsReplicated(true);
+
+	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(TEXT("LagCompensation"));
 
 	// 在蓝图类中允许crouch
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -263,6 +267,14 @@ void ABlasterCharacter::PostInitializeComponents()
 		Buff->BlasterCharacter = this;
 		Buff->SetInitSpeed(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeedCrouched);
 		Buff->SetInitJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	if (LagCompensation)
+	{
+		LagCompensation->PlayerCharacter = this;
+		if (Controller)
+		{
+			LagCompensation->PlayerController = Cast<ABlasterPlayerController>(Controller);
+		}
 	}
 }
 
