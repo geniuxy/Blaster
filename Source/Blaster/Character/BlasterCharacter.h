@@ -72,6 +72,9 @@ public:
 	virtual void Destroyed() override;
 
 	bool IsLocallyReloading();
+	
+	UPROPERTY()
+	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
 protected:
 	virtual void BeginPlay() override;
