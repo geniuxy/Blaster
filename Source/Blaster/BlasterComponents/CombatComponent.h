@@ -35,8 +35,8 @@ public:
 	void SwapWeapons();
 	bool ShouldSwapWeapons();
 
+	bool bLocallyReloading = false;
 	void Reload();
-
 	UFUNCTION(BlueprintCallable)
 	void FinishReload();
 

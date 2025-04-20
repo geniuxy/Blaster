@@ -470,6 +470,12 @@ void ABlasterCharacter::ReloadButtonPressed()
 		Combat->Reload();
 }
 
+bool ABlasterCharacter::IsLocallyReloading()
+{
+	if (Combat == nullptr) return false;
+	return Combat->bLocallyReloading;
+}
+
 void ABlasterCharacter::ThrowGrenadeButtonPressed()
 {
 	if (bDisableGamePlay) return;

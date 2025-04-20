@@ -67,6 +67,8 @@ public:
 
 	virtual void Destroyed() override;
 
+	bool IsLocallyReloading();
+
 protected:
 	virtual void BeginPlay() override;
 	

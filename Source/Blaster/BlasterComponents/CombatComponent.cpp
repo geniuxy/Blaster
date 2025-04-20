@@ -205,9 +205,19 @@ void UCombatComponent::FireShotgun()
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
-	bool bFireWhenShotgunReloading = !EquippedWeapon->IsEmpty() && bCanFire && CombatState ==
-		ECombatState::ECS_Reloading &&
+	bool bFireWhenShotgunReloading =
+		!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading &&
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
+	if (bLocallyReloading)
+	{
+		// allow shutgun shot at reloading
+		if(bFireWhenShotgunReloading)
+		{
+			bLocallyReloading = false;
+			return true;
+		}
+		return false;
+	}
 	bool bFireWhenUnoccupied = !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 	return bFireWhenShotgunReloading || bFireWhenUnoccupied;
 }
@@ -467,15 +477,21 @@ void UCombatComponent::ShowAttachedGrenade(bool bShowGrenade)
 void UCombatComponent::Reload()
 {
 	// 必须有子弹以及不处于Reloading状态才能Reload
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull())
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied &&
+		EquippedWeapon && !EquippedWeapon->IsFull() && !bLocallyReloading)
+	{
 		ServerReload();
+		HandleReload();
+		bLocallyReloading = true;
+	}
 }
 
 void UCombatComponent::ServerReload_Implementation()
 {
 	if (PlayerCharacter == nullptr) return;
 	CombatState = ECombatState::ECS_Reloading;
-	HandleReload();
+	if (!PlayerCharacter->IsLocallyControlled())
+		HandleReload();
 }
 
 void UCombatComponent::OnRep_CombatState()
@@ -488,7 +504,8 @@ void UCombatComponent::OnRep_CombatState()
 			Fire();
 		break;
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		if (PlayerCharacter && !PlayerCharacter->IsLocallyControlled())
+			HandleReload();
 		break;
 	case ECombatState::ECS_ThrowingGrenade:
 		HandleThrowGrenade();
@@ -508,6 +525,7 @@ void UCombatComponent::HandleReload()
 void UCombatComponent::FinishReload()
 {
 	if (PlayerCharacter == nullptr) return;
+	bLocallyReloading = false;
 	if (PlayerCharacter->HasAuthority())
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
