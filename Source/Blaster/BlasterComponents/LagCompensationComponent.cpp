@@ -58,7 +58,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 	bool bReturn = HitCharacter == nullptr || HitCharacter->GetLagCompensation() == nullptr ||
 		HitCharacter->GetLagCompensation()->FrameHistory.GetHead() == nullptr ||
 		HitCharacter->GetLagCompensation()->FrameHistory.GetTail() == nullptr;
-	if (bReturn) return FServerSideRewindResult{};
+	if (bReturn) return FServerSideRewindResult();
 
 	// Frame package that we check to verify a hit
 	FFramePackage FrameToCheck;
@@ -69,7 +69,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
 	if (OldestHistoryTime < HitTime)
 	{
-		return FServerSideRewindResult{};
+		return FServerSideRewindResult();
 	}
 	if (OldestHistoryTime == HitTime)
 	{
