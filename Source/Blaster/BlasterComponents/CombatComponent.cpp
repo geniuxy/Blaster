@@ -99,6 +99,8 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 	if (PlayerCharacter->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
 		PlayerCharacter->ShowSniperScopeWidget(bIsAiming);
+	if (PlayerCharacter->IsLocallyControlled())
+		bAimButtonPressed = bIsAiming;
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
@@ -112,6 +114,12 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 		else
 			MovementComponent->MaxWalkSpeedCrouched = bIsAiming ? CrouchAimWalkSpeed : BaseCrouchWalkSpeed;
 	}
+}
+
+void UCombatComponent::OnRep_Aiming()
+{
+	if (PlayerCharacter && PlayerCharacter->IsLocallyControlled())
+		bAiming = bAimButtonPressed;
 }
 
 void UCombatComponent::FireButtonPressed(bool bPressed)
