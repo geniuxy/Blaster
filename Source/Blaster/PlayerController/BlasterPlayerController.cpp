@@ -3,9 +3,11 @@
 
 #include "BlasterPlayerController.h"
 
+#include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/HUD/Announcement.h"
+#include "Blaster/HUD/BlasterHUD.h"
 #include "Blaster/HUD/CharacterOverlay.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
@@ -413,7 +415,8 @@ void ABlasterPlayerController::ReportServerTime_Implementation(float TimeOfClien
                                                                float TimeOfServerReceivedClientRequest)
 {
 	float RoundTripTime = GetWorld()->GetTimeSeconds() - TimeOfClientRequest;
-	float CurrentServerTime = TimeOfServerReceivedClientRequest + 0.5 * RoundTripTime;
+	SingleTripTime = 0.5f * RoundTripTime;
+	float CurrentServerTime = TimeOfServerReceivedClientRequest + SingleTripTime;
 	ClientServerDelta = CurrentServerTime - GetWorld()->GetTimeSeconds();
 }
 

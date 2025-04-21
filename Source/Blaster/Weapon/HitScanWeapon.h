@@ -21,9 +21,6 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere)
-	float Damage = 10.f;
-
-	UPROPERTY(EditAnywhere)
 	UParticleSystem* ImpactParticle; // 命中点特效
 
 	UPROPERTY(EditAnywhere)

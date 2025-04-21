@@ -115,7 +115,7 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
-	
+
 	/**
 	 * Trace end with scatter
 	 */
@@ -126,13 +126,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Weapon Scatter")
 	float SphereRadius = 75.f; // 散弹枪散射半径
 
-private:
+	UPROPERTY(EditAnywhere)
+	float Damage = 10.f;
+
+	UPROPERTY(EditAnywhere)
+	bool bUseServerSideRewind = false;
+
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;
 
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
+private:
 	UPROPERTY(EditAnywhere, Category= "Weapon Properties")
 	EWeaponType WeaponType;
 
@@ -193,10 +199,12 @@ public:
 	bool IsEmpty();
 
 	bool IsFull();
-	
+
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 
 	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
+
+	FORCEINLINE float GetDamage() const { return Damage; }
 };

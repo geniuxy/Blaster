@@ -3,7 +3,9 @@
 
 #include "HitScanWeapon.h"
 
+#include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -26,9 +28,34 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		WeaponTraceHit(Start, HitTarget, FireHit);
 
 		ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-		if (HitCharacter && HasAuthority() && InstigatorController)
-			UGameplayStatics::ApplyDamage(HitCharacter, Damage, InstigatorController, this,
-			                              UDamageType::StaticClass());
+		if (HitCharacter && InstigatorController)
+		{
+			if (HasAuthority() && !bUseServerSideRewind)
+			{
+				UGameplayStatics::ApplyDamage(HitCharacter, Damage, InstigatorController, this,
+				                              UDamageType::StaticClass());
+			}
+			if (!HasAuthority() && bUseServerSideRewind)
+			{
+				BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr
+					                        ? Cast<ABlasterCharacter>(InstigatorPawn)
+					                        : BlasterOwnerCharacter;
+				BlasterOwnerController = BlasterOwnerController == nullptr
+					                         ? Cast<ABlasterPlayerController>(InstigatorController)
+					                         : BlasterOwnerController;
+
+				if (BlasterOwnerCharacter && BlasterOwnerController && BlasterOwnerCharacter->GetLagCompensation())
+				{
+					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
+						BlasterOwnerCharacter,
+						Start,
+						HitTarget,
+						BlasterOwnerController->GetServerTime() - BlasterOwnerController->SingleTripTime,
+						this
+					);
+				}
+			}
+		}
 
 		if (ImpactParticle)
 			UGameplayStatics::SpawnEmitterAtLocation(
@@ -60,9 +87,9 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		// 如果命中了造成伤害
 		if (OutHit.bBlockingHit)
 			BeamEnd = OutHit.ImpactPoint;
-		
+
 		DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true);
-		
+
 		if (BeamParticle)
 		{
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(

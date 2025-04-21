@@ -5,6 +5,7 @@
 
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ULagCompensationComponent::ULagCompensationComponent()
 {
@@ -106,6 +107,27 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 	}
 
 	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+}
+
+void ULagCompensationComponent::ServerScoreRequest_Implementation(
+	ABlasterCharacter* HitCharacter,
+	const FVector_NetQuantize& TraceStart,
+	const FVector_NetQuantize& HitLocation,
+	float HitTime,
+	AWeapon* DamageCauser)
+{
+	FServerSideRewindResult Confirm  = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
+
+	if (PlayerCharacter && HitCharacter && DamageCauser && Confirm.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			DamageCauser->GetDamage(),
+			PlayerCharacter->Controller,
+			DamageCauser,
+			UDamageType::StaticClass()
+		);
+	}
 }
 
 FFramePackage ULagCompensationComponent::InterpBetweenFrames(
@@ -255,6 +277,12 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	SaveFramePackage();
+}
+
+void ULagCompensationComponent::SaveFramePackage()
+{
+	if (PlayerCharacter == nullptr || !PlayerCharacter->HasAuthority()) return;
 	if (FrameHistory.Num() <= 1)
 	{
 		FFramePackage ThisFrame;
@@ -273,6 +301,7 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 		SaveFramePackage(ThisFrame);
 		FrameHistory.AddHead(ThisFrame);
 
-		ShowFramePackage(ThisFrame, FColor::Red);
+		// ShowFramePackage(ThisFrame, FColor::Red);
 	}
 }
+
