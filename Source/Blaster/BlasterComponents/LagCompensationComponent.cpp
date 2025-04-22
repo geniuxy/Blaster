@@ -17,23 +17,6 @@ void ULagCompensationComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
-{
-	PlayerCharacter = PlayerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : PlayerCharacter;
-	if (PlayerCharacter)
-	{
-		Package.Time = GetWorld()->GetTimeSeconds();
-		for (auto& BoxPair : PlayerCharacter->HitCollisionBoxes)
-		{
-			FBoxInformation BoxInformation;
-			BoxInformation.Location = BoxPair.Value->GetComponentLocation();
-			BoxInformation.Rotation = BoxPair.Value->GetComponentRotation();
-			BoxInformation.BoxExtent = BoxPair.Value->GetScaledBoxExtent();
-			Package.HitBoxInfo.Add(BoxPair.Key, BoxInformation);
-		}
-	}
-}
-
 void ULagCompensationComponent::ShowFramePackage(const FFramePackage& Package, const FColor& Color)
 {
 	for (auto& BoxInfo : Package.HitBoxInfo)
@@ -56,10 +39,30 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 	const FVector_NetQuantize& HitLocation,
 	float HitTime)
 {
+	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
+	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+}
+
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewind(
+	const TArray<ABlasterCharacter*>& HitCharacters,
+	const FVector_NetQuantize& TraceStart,
+	const TArray<FVector_NetQuantize>& HitLocations,
+	float HitTime)
+{
+	TArray<FFramePackage> FramesToCheck;
+	for (ABlasterCharacter* HitCharacter : HitCharacters)
+	{
+		FramesToCheck.Add(GetFrameToCheck(HitCharacter, HitTime));
+	}
+	return FShotgunServerSideRewindResult();
+}
+
+FFramePackage ULagCompensationComponent::GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime)
+{
 	bool bReturn = HitCharacter == nullptr || HitCharacter->GetLagCompensation() == nullptr ||
 		HitCharacter->GetLagCompensation()->FrameHistory.GetHead() == nullptr ||
 		HitCharacter->GetLagCompensation()->FrameHistory.GetTail() == nullptr;
-	if (bReturn) return FServerSideRewindResult();
+	if (bReturn) return FFramePackage();
 
 	// Frame package that we check to verify a hit
 	FFramePackage FrameToCheck;
@@ -70,7 +73,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 	const float NewestHistoryTime = History.GetHead()->GetValue().Time;
 	if (OldestHistoryTime < HitTime)
 	{
-		return FServerSideRewindResult();
+		return FFramePackage();
 	}
 	if (OldestHistoryTime == HitTime)
 	{
@@ -106,7 +109,7 @@ FServerSideRewindResult ULagCompensationComponent::ServerSideRewind(
 		FrameToCheck = InterpBetweenFrames(Older->GetValue(), Younger->GetValue(), HitTime);
 	}
 
-	return ConfirmHit(FrameToCheck, HitCharacter, TraceStart, HitLocation);
+	return FrameToCheck;
 }
 
 void ULagCompensationComponent::ServerScoreRequest_Implementation(
@@ -116,7 +119,7 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(
 	float HitTime,
 	AWeapon* DamageCauser)
 {
-	FServerSideRewindResult Confirm  = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
+	FServerSideRewindResult Confirm = ServerSideRewind(HitCharacter, TraceStart, HitLocation, HitTime);
 
 	if (PlayerCharacter && HitCharacter && DamageCauser && Confirm.bHitConfirmed)
 	{
@@ -217,6 +220,12 @@ FServerSideRewindResult ULagCompensationComponent::ConfirmHit(
 	return FServerSideRewindResult{false, false};
 }
 
+FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<FFramePackage>& FramePackages,
+	const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations)
+{
+	return FShotgunServerSideRewindResult();
+}
+
 void ULagCompensationComponent::CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage)
 {
 	if (HitCharacter == nullptr) return;
@@ -305,3 +314,19 @@ void ULagCompensationComponent::SaveFramePackage()
 	}
 }
 
+void ULagCompensationComponent::SaveFramePackage(FFramePackage& Package)
+{
+	PlayerCharacter = PlayerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : PlayerCharacter;
+	if (PlayerCharacter)
+	{
+		Package.Time = GetWorld()->GetTimeSeconds();
+		for (auto& BoxPair : PlayerCharacter->HitCollisionBoxes)
+		{
+			FBoxInformation BoxInformation;
+			BoxInformation.Location = BoxPair.Value->GetComponentLocation();
+			BoxInformation.Rotation = BoxPair.Value->GetComponentRotation();
+			BoxInformation.BoxExtent = BoxPair.Value->GetScaledBoxExtent();
+			Package.HitBoxInfo.Add(BoxPair.Key, BoxInformation);
+		}
+	}
+}

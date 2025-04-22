@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "LagCompensationComponent.generated.h"
 
+class ABlasterCharacter;
+
 USTRUCT(BlueprintType)
 struct FBoxInformation
 {
@@ -27,10 +29,13 @@ struct FFramePackage
 	GENERATED_BODY()
 
 	UPROPERTY()
-	float Time;
+	float Time = 0.f;
 
 	UPROPERTY()
 	TMap<FName, FBoxInformation> HitBoxInfo;
+
+	UPROPERTY()
+	ABlasterCharacter* Character = nullptr;
 };
 
 USTRUCT()
@@ -43,6 +48,18 @@ struct FServerSideRewindResult
 
 	UPROPERTY()
 	bool bHeadShot;
+};
+
+USTRUCT(BlueprintType)
+struct FShotgunServerSideRewindResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<ABlasterCharacter*, uint32> HeadShots;
+
+	UPROPERTY()
+	TMap<ABlasterCharacter*, uint32> BodyShots;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -79,8 +96,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	void SaveFramePackage(FFramePackage& Package);
-
 	FFramePackage InterpBetweenFrames(
 		const FFramePackage& OlderFrame,
 		const FFramePackage& YoungerFrame,
@@ -97,6 +112,25 @@ protected:
 	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 	void SaveFramePackage();
+	void SaveFramePackage(FFramePackage& Package);
+
+	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
+
+	/** 
+	* Shotgun
+	*/
+	FShotgunServerSideRewindResult ShotgunServerSideRewind(
+		const TArray<ABlasterCharacter*>& HitCharacters,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations,
+		float HitTime
+	);
+
+	FShotgunServerSideRewindResult ShotgunConfirmHit(
+		const TArray<FFramePackage>& FramePackages,
+		const FVector_NetQuantize& TraceStart,
+		const TArray<FVector_NetQuantize>& HitLocations
+	);
 
 private:
 	UPROPERTY()
