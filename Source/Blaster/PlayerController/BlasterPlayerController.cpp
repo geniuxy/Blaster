@@ -347,6 +347,7 @@ void ABlasterPlayerController::PollInit()
 
 void ABlasterPlayerController::CheckPing(float DeltaSeconds)
 {
+	if (HasAuthority()) return;
 	HighPingRunningTime += DeltaSeconds;
 	if (HighPingRunningTime > CheckPingFrequency)
 	{
@@ -357,6 +358,11 @@ void ABlasterPlayerController::CheckPing(float DeltaSeconds)
 			{
 				HighPingWarning();
 				PingAnimationRunningTime = 0.f;
+				ServerReportPingStatus(true);
+			}
+			else
+			{
+				ServerReportPingStatus(false);
 			}
 		}
 		HighPingRunningTime = 0.f;
@@ -481,6 +487,11 @@ void ABlasterPlayerController::OnRep_MatchState()
 		HandleMatchHasStarted();
 	else if (MatchState == MatchState::Cooldown)
 		HandleMatchCooldown();
+}
+
+void ABlasterPlayerController::ServerReportPingStatus_Implementation(bool bHighPing)
+{
+	HighPingDelegate.Broadcast(bHighPing);
 }
 
 void ABlasterPlayerController::HandleMatchHasStarted()
