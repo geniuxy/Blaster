@@ -21,4 +21,7 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AProjectile> ProjectileClass;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AProjectile> SSRProjectileClass; // 这个SSRProjectileClass其实是 not replicates
 };

@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	float InitialSpeed = 15000;
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
 protected:
 	UFUNCTION()
 	virtual void BeginPlay() override;
@@ -55,9 +58,6 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float DamageOuterRadius = 500.f;
-
-	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticle;
