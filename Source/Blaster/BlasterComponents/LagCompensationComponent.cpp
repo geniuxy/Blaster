@@ -65,13 +65,34 @@ void ULagCompensationComponent::ServerScoreRequest_Implementation(
 	}
 }
 
-FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(ABlasterCharacter* HitCharacter,
-                                                                              const FVector_NetQuantize& TraceStart,
-                                                                              const FVector_NetQuantize100&
-                                                                              InitialVelocity, float HitTime)
+FServerSideRewindResult ULagCompensationComponent::ProjectileServerSideRewind(
+	ABlasterCharacter* HitCharacter,
+	const FVector_NetQuantize& TraceStart,
+	const FVector_NetQuantize100& InitialVelocity,
+	float HitTime)
 {
 	FFramePackage FrameToCheck = GetFrameToCheck(HitCharacter, HitTime);
 	return ProjectileConfirmHit(FrameToCheck, HitCharacter, TraceStart, InitialVelocity, HitTime);
+}
+
+void ULagCompensationComponent::ProjectileServerScoreRequest_Implementation(
+	ABlasterCharacter* HitCharacter,
+	const FVector_NetQuantize& TraceStart,
+	const FVector_NetQuantize100& InitialVelocity,
+	float HitTime)
+{
+	FServerSideRewindResult Confirm = ProjectileServerSideRewind(HitCharacter, TraceStart, InitialVelocity, HitTime);
+
+	if (PlayerCharacter && PlayerCharacter->GetEquippedWeapon() && HitCharacter && Confirm.bHitConfirmed)
+	{
+		UGameplayStatics::ApplyDamage(
+			HitCharacter,
+			PlayerCharacter->GetEquippedWeapon()->GetDamage(),
+			PlayerCharacter->Controller,
+			PlayerCharacter->GetEquippedWeapon(),
+			UDamageType::StaticClass()
+		);
+	}
 }
 
 FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunServerSideRewind(

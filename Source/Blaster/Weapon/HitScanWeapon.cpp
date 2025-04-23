@@ -30,8 +30,8 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		ABlasterCharacter* HitCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
 		if (HitCharacter && InstigatorController)
 		{
-			// 不考虑ssr, 只在服务器上考虑伤害
-			if (HasAuthority() && !bUseServerSideRewind)
+			bool bCauseAuthDamage = !bUseServerSideRewind || InstigatorPawn->IsLocallyControlled();
+			if (HasAuthority() && bCauseAuthDamage) // 不考虑ssr, 只在服务器上考虑伤害
 			{
 				UGameplayStatics::ApplyDamage(HitCharacter, Damage, InstigatorController, this,
 				                              UDamageType::StaticClass());
