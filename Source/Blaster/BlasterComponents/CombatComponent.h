@@ -40,10 +40,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FinishReload();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void FinishSwap();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void FinishSwapAttachWeapons();
 
 	UFUNCTION(BlueprintCallable)
@@ -74,7 +74,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
-	
+
 	UFUNCTION()
 	void OnRep_SecondaryWeapon();
 
@@ -94,7 +94,7 @@ protected:
 	void FireShotgun();
 	void LocalFire(const FVector_NetQuantize& TracerHitTarget);
 	void LocalShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
-	
+
 	// FVector_NetQuantize 通常用于角色位置、方向或其他需要在网络上同步的向量数据的处理。
 	// 是FVector的一个派生（子）类
 	// 缩放后的浮点数值四舍五入到最接近的整数值
@@ -146,7 +146,7 @@ private:
 
 	UPROPERTY(ReplicatedUsing= OnRep_SecondaryWeapon)
 	AWeapon* SecondaryWeapon;
-	
+
 	UPROPERTY(ReplicatedUsing = OnRep_Aiming)
 	bool bAiming = false;
 

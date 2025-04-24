@@ -525,7 +525,7 @@ void UCombatComponent::FinishReload()
 		Fire();
 }
 
-void UCombatComponent::FinishSwap()
+void UCombatComponent::FinishSwap_Implementation()
 {
 	if (PlayerCharacter && PlayerCharacter->HasAuthority())
 	{
@@ -533,11 +533,9 @@ void UCombatComponent::FinishSwap()
 	}
 	if (PlayerCharacter)
 		PlayerCharacter->bFinishedSwapping = true;
-	if (SecondaryWeapon)
-		SecondaryWeapon->EnableCustomDepth(true);
 }
 
-void UCombatComponent::FinishSwapAttachWeapons()
+void UCombatComponent::FinishSwapAttachWeapons_Implementation()
 {
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
