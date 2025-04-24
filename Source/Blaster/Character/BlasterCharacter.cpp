@@ -189,16 +189,6 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BlasterPlayerController =
-		BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-	if (BlasterPlayerController)
-		BlasterPlayerController->HideHUDDeathMessage();
-
-	SpawnDefaultWeapon();
-	UpdateHUDAmmo();
-	UpdateHUDHealth();
-	UpdateHUDShield();
-
 	if (HasAuthority())
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);
 	if (AttachGrenade)
@@ -454,9 +444,9 @@ void ABlasterCharacter::EquipButtonPressed()
 	{
 		if (Combat->CombatState == ECombatState::ECS_Unoccupied)
 			ServerEquipButtonPressed();
-		bool bSwap = Combat->ShouldSwapWeapons() && 
-			!HasAuthority() && 
-			Combat->CombatState == ECombatState::ECS_Unoccupied && 
+		bool bSwap = Combat->ShouldSwapWeapons() &&
+			!HasAuthority() &&
+			Combat->CombatState == ECombatState::ECS_Unoccupied &&
 			OverlappingWeapon == nullptr;
 		if (bSwap)
 		{
@@ -714,6 +704,20 @@ void ABlasterCharacter::PollInit()
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
 			BlasterPlayerState->SetKilledBy("");
+		}
+	}
+	if (BlasterPlayerController == nullptr)
+	{
+		BlasterPlayerController =
+			BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+		if (BlasterPlayerController)
+		{
+			BlasterPlayerController->HideHUDDeathMessage();
+
+			SpawnDefaultWeapon();
+			UpdateHUDAmmo();
+			UpdateHUDHealth();
+			UpdateHUDShield();
 		}
 	}
 }
