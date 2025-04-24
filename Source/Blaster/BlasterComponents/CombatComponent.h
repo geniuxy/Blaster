@@ -99,14 +99,14 @@ protected:
 	// 是FVector的一个派生（子）类
 	// 缩放后的浮点数值四舍五入到最接近的整数值
 	// 使用这个函数可以帮助优化网络性能，特别是在处理大量数据或者网络带宽有限的情况下。
-	UFUNCTION(Server, Reliable)
-	void ServerFire(const FVector_NetQuantize& TracerHitTarget);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire(const FVector_NetQuantize& TracerHitTarget, float FireDelay);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastFire(const FVector_NetQuantize& TracerHitTarget);
 
-	UFUNCTION(Server, Reliable)
-	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets, float FireDelay);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
