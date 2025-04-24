@@ -205,21 +205,13 @@ void UCombatComponent::FireShotgun()
 bool UCombatComponent::CanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
-	bool bFireWhenShotgunReloading =
+	bool bCanShotgunFire =
 		!EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Reloading &&
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
-	if (bLocallyReloading)
-	{
-		// allow shutgun shot at reloading
-		if(bFireWhenShotgunReloading)
-		{
-			bLocallyReloading = false;
-			return true;
-		}
-		return false;
-	}
-	bool bFireWhenUnoccupied = !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
-	return bFireWhenShotgunReloading || bFireWhenUnoccupied;
+	if (bCanShotgunFire)
+		return true;
+	if (bLocallyReloading) return false;
+	return !EquippedWeapon->IsEmpty() && bCanFire && CombatState == ECombatState::ECS_Unoccupied;
 }
 
 void UCombatComponent::StartFireTimer()
@@ -339,21 +331,12 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::SwapWeapons()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied) return;
-	AWeapon* TempWeapon = EquippedWeapon;
-	EquippedWeapon = SecondaryWeapon;
-	SecondaryWeapon = TempWeapon;
+	if (CombatState != ECombatState::ECS_Unoccupied || PlayerCharacter == nullptr || !PlayerCharacter->HasAuthority()) return;
 
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
-	AttachActorToRightHand(EquippedWeapon);
-	PlayEquipWeaponSound(EquippedWeapon);
-	EquippedWeapon->UpdateWeaponAmmo();
-	UpdateCarriedWeaponType();
-	UpdateCarriedAmmo();
-	UpdateHUDGrenades();
-
-	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
-	AttachActorToBackPack(SecondaryWeapon);
+	PlayerCharacter->PlaySwapWeaponMontage();
+	CombatState = ECombatState::ECS_SwapingWeapons;
+	PlayerCharacter->bFinishedSwapping = false;
+	if (SecondaryWeapon) SecondaryWeapon->EnableCustomDepth(false);
 }
 
 bool UCombatComponent::ShouldSwapWeapons()
@@ -510,6 +493,12 @@ void UCombatComponent::OnRep_CombatState()
 	case ECombatState::ECS_ThrowingGrenade:
 		HandleThrowGrenade();
 		break;
+	case ECombatState::ECS_SwapingWeapons:
+		if (PlayerCharacter && !PlayerCharacter->IsLocallyControlled())
+		{
+			PlayerCharacter->PlaySwapWeaponMontage();
+		}
+		break;
 	default: ;
 	}
 }
@@ -534,6 +523,36 @@ void UCombatComponent::FinishReload()
 	// 下面两行判断作用是：server端在reload之后能持续开枪
 	if (bFireButtonPressed)
 		Fire();
+}
+
+void UCombatComponent::FinishSwap()
+{
+	if (PlayerCharacter && PlayerCharacter->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+	if (PlayerCharacter)
+		PlayerCharacter->bFinishedSwapping = true;
+	if (SecondaryWeapon)
+		SecondaryWeapon->EnableCustomDepth(true);
+}
+
+void UCombatComponent::FinishSwapAttachWeapons()
+{
+	AWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+	AttachActorToRightHand(EquippedWeapon);
+	PlayEquipWeaponSound(EquippedWeapon);
+	EquippedWeapon->UpdateWeaponAmmo();
+	UpdateCarriedWeaponType();
+	UpdateCarriedAmmo();
+	UpdateHUDGrenades();
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackPack(SecondaryWeapon);
 }
 
 void UCombatComponent::ShotgunShellReload()

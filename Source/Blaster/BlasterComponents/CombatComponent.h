@@ -41,6 +41,12 @@ public:
 	void FinishReload();
 
 	UFUNCTION(BlueprintCallable)
+	void FinishSwap();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishSwapAttachWeapons();
+
+	UFUNCTION(BlueprintCallable)
 	void ShotgunShellReload();
 
 	void FireButtonPressed(bool bPressed);

@@ -247,7 +247,7 @@ void AWeapon::OnEquippedSecondary()
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		WeaponMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 	}
-	EnableCustomDepth(true);
+	
 	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);
 	WeaponMesh->MarkRenderStateDirty();
 
