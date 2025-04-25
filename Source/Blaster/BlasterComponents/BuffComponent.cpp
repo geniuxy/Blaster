@@ -3,6 +3,7 @@
 
 #include "BuffComponent.h"
 
+#include "CombatComponent.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 

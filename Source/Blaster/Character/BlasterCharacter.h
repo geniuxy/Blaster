@@ -364,7 +364,7 @@ public:
 
 	FORCEINLINE UBuffComponent* GetBuff() const { return Buff; }
 
-	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation;}
+	FORCEINLINE ULagCompensationComponent* GetLagCompensation() const { return LagCompensation; }
 
 	FORCEINLINE UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
 
