@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "GameFramework/PlayerState.h"
 #include "BlasterPlayerState.generated.h"
 
+class ABlasterPlayerController;
+class ABlasterCharacter;
 /**
  * 
  */
@@ -33,15 +36,20 @@ public:
 	void UpdateDeathMessage();
 
 private:
-	class ABlasterCharacter* Character;
-	class ABlasterPlayerController* Controller;
+	ABlasterCharacter* Character;
+	ABlasterPlayerController* Controller;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;
 
 	UPROPERTY(ReplicatedUsing= OnRep_KilledBy)
 	FString KilledBy;
+	
+	UPROPERTY(Replicated)
+	ETeam Team = ETeam::ET_NoTeam;
 
 public:
+	FORCEINLINE ETeam GetTeam() const { return Team; }
+	FORCEINLINE void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
 	FORCEINLINE void SetKilledBy(const FString& KillerName) { KilledBy = KillerName; }
 };
