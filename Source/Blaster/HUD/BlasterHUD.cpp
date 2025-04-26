@@ -68,6 +68,9 @@ void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
 
 			FTimerHandle ElimMsgTimer;
 			FTimerDelegate ElimMsgDelegate;
+			// 解释为什么用delegate来remove ElimAnnouncement
+			// We needed the callback function to know which Elim Announcement Widget to remove,
+			// so we passed that value into the delegate with BindUFunction.
 			ElimMsgDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinished"), ElimAnnouncementWidget);
 			GetWorldTimerManager().SetTimer(
 				ElimMsgTimer,
