@@ -30,6 +30,8 @@ public:
 	                              ABlasterPlayerController* AttackerController);
 	virtual void RequestRespawn(ABlasterCharacter* ElimCharacter, AController* ElimController);
 
+	void PlayerLeftGame(class ABlasterPlayerState* PlayerLeaving);
+
 	UPROPERTY(EditDefaultsOnly)
 	float WarmupTime = 10.f;
 
