@@ -33,7 +33,9 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			bool bCauseAuthDamage = !bUseServerSideRewind || InstigatorPawn->IsLocallyControlled();
 			if (HasAuthority() && bCauseAuthDamage) // 不考虑ssr, 只在服务器上考虑伤害
 			{
-				UGameplayStatics::ApplyDamage(HitCharacter, Damage, InstigatorController, this,
+				const float DamageToCause = FireHit.BoneName.ToString() == FString("head") ? HeadShotDamage : Damage;
+
+				UGameplayStatics::ApplyDamage(HitCharacter, DamageToCause, InstigatorController, this,
 				                              UDamageType::StaticClass());
 			}
 			// 考虑ssr, 只在服务器上考虑伤害
@@ -90,6 +92,8 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		// 如果命中了造成伤害
 		if (OutHit.bBlockingHit)
 			BeamEnd = OutHit.ImpactPoint;
+		else
+			OutHit.ImpactPoint = End;
 
 		// DrawDebugSphere(GetWorld(), BeamEnd, 16.f, 12, FColor::Orange, true);
 
