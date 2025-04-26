@@ -8,12 +8,15 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterAnimInstance.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Blaster/Blaster.h"
 #include "TimerManager.h"
 #include "Blaster/BlasterComponents/BuffComponent.h"
 #include "Blaster/BlasterComponents/CombatComponent.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "Blaster/GameState/BlasterGameState.h"
 #include "Blaster/HUD/OverHeadWidget.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
@@ -704,6 +707,13 @@ void ABlasterCharacter::PollInit()
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
 			BlasterPlayerState->SetKilledBy("");
+
+			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+
+			if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(BlasterPlayerState))
+			{
+				MulticastGainedTheLead();
+			}
 		}
 	}
 	if (BlasterPlayerController == nullptr)
@@ -801,6 +811,9 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	if (bSniperAiming)
 		ShowSniperScopeWidget(false);
 
+	if (CrownComponent)
+		CrownComponent->DestroyComponent();
+
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
 		this,
@@ -824,6 +837,35 @@ void ABlasterCharacter::ServerLeaveGame_Implementation()
 	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
 	if (BlasterGameMode && BlasterPlayerState)
 		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);
+}
+
+void ABlasterCharacter::MulticastGainedTheLead_Implementation()
+{
+	if (CrownSystem == nullptr) return;
+	if (CrownComponent == nullptr)
+	{
+		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			CrownSystem,
+			GetCapsuleComponent(),
+			FName(),
+			GetActorLocation() + FVector(0.f, 0.f, 110.f),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition,
+			false
+		);
+	}
+	if (CrownComponent)
+	{
+		CrownComponent->Activate();
+	}
+}
+
+void ABlasterCharacter::MulticastLostTheLead_Implementation()
+{
+	if (CrownComponent)
+	{
+		CrownComponent->DestroyComponent();
+	}
 }
 
 void ABlasterCharacter::OnRep_Health(float LastHealth)

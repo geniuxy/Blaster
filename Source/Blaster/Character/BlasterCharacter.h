@@ -15,6 +15,8 @@
 #include "Sound/SoundCue.h"
 #include "BlasterCharacter.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
 class UCombatComponent;
 class ULagCompensationComponent;
 class UBuffComponent;
@@ -83,6 +85,12 @@ public:
 	void ServerLeaveGame();
 
 	FOnLeftGame OnLeftGame;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGainedTheLead();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLostTheLead();
 
 protected:
 	virtual void BeginPlay() override;
@@ -297,6 +305,15 @@ private:
 	void ElimTimerFinished();
 
 	bool bLeftGame = false;
+
+	/**
+	 * Crown
+	 */
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* CrownSystem;
+
+	UPROPERTY()
+	UNiagaraComponent* CrownComponent;
 
 	/**
 	 * Dissolve Material

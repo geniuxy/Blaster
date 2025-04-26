@@ -77,8 +77,31 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	
 	if (AttackerState && AttackerState != VictimState && BlasterGameState)
 	{
+		TArray<ABlasterPlayerState*> PlayersCurrentlyInTheLead;
+		for (auto LeadPlayer : BlasterGameState->TopScoringPlayers)
+		{
+			PlayersCurrentlyInTheLead.Add(LeadPlayer);
+		}
+		
 		AttackerState->AddToScore(1.f);
 		BlasterGameState->UpdateTopScore(AttackerState);
+
+		if (BlasterGameState->TopScoringPlayers.Contains(AttackerState))
+		{
+			ABlasterCharacter* Leader = Cast<ABlasterCharacter>(AttackerState->GetPawn());
+			if (Leader)
+				Leader->MulticastGainedTheLead();
+		}
+
+		for (int32 i = 0; i < PlayersCurrentlyInTheLead.Num(); i++)
+		{
+			if (!BlasterGameState->TopScoringPlayers.Contains(PlayersCurrentlyInTheLead[i]))
+			{
+				ABlasterCharacter* Loser = Cast<ABlasterCharacter>(PlayersCurrentlyInTheLead[i]->GetPawn());
+				if (Loser)
+					Loser->MulticastLostTheLead();
+			}
+		}
 	}
 
 	if (AttackerState && VictimState)
