@@ -34,7 +34,8 @@ void UReturnToMainMenu::MenuSetup()
 	{
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
 		if (MultiplayerSessionsSubsystem &&
-			!MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionDelegate.IsBound())
+			!MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionDelegate.IsAlreadyBound(
+				this, &UReturnToMainMenu::OnDestroySession))
 		{
 			MultiplayerSessionsSubsystem->
 				MultiplayerOnDestroySessionDelegate.AddDynamic(this, &UReturnToMainMenu::OnDestroySession);
