@@ -54,6 +54,8 @@ public:
 	float SingleTripTime = 0.f;
 
 	FHighPingDelegate HighPingDelegate;
+	
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 
 protected:
 	virtual void BeginPlay() override;
@@ -95,6 +97,9 @@ protected:
 	UFUNCTION(Client, Reliable)
 	void ClientHandleMatchState(float TimeOfMatch, float TimeOfWarmup, float TimeOfCooldown, float StartingTime,
 	                            FName StateOfMatch);
+
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 private:
 	UPROPERTY()

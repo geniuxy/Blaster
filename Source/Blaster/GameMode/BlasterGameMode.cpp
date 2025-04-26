@@ -67,14 +67,10 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 {
 	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr) return;
 	if (VictimController == nullptr || VictimController->PlayerState == nullptr) return;
-	ABlasterPlayerState* AttackerState = AttackerController
-		                                     ? Cast<ABlasterPlayerState>(AttackerController->PlayerState)
-		                                     : nullptr;
-	ABlasterPlayerState* VictimState = VictimController
-		                                   ? Cast<ABlasterPlayerState>(VictimController->PlayerState)
-		                                   : nullptr;
+	ABlasterPlayerState* AttackerState = Cast<ABlasterPlayerState>(AttackerController->PlayerState);
+	ABlasterPlayerState* VictimState = Cast<ABlasterPlayerState>(VictimController->PlayerState);
 	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
-	
+
 	if (AttackerState && AttackerState != VictimState && BlasterGameState)
 	{
 		TArray<ABlasterPlayerState*> PlayersCurrentlyInTheLead;
@@ -82,7 +78,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		{
 			PlayersCurrentlyInTheLead.Add(LeadPlayer);
 		}
-		
+
 		AttackerState->AddToScore(1.f);
 		BlasterGameState->UpdateTopScore(AttackerState);
 
@@ -113,7 +109,16 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	}
 
 	if (ElimmedCharacter)
-		ElimmedCharacter->Elim(false);	
+		ElimmedCharacter->Elim(false);
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayer && AttackerState && VictimState)
+		{
+			BlasterPlayer->BroadcastElim(AttackerState, VictimState);
+		}
+	}
 }
 
 void ABlasterGameMode::RequestRespawn(ABlasterCharacter* ElimCharacter, AController* ElimController)
