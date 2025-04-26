@@ -60,8 +60,17 @@ private:
 	UPROPERTY()
 	APlayerController* OwningPlayer;
 
-	UPROPERTY(EditAnywhere, Category= "Announcement")
+	UPROPERTY(EditAnywhere, Category= "Announcement|Elim")
 	TSubclassOf<UElimAnnouncement> ElimAnnouncementClass;
+
+	UPROPERTY(EditAnywhere, Category= "Announcement|Elim")
+	float ElimAnnouncementTime = 3.f;
+
+	UFUNCTION()
+	void ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove);
+
+	UPROPERTY()
+	TArray<UElimAnnouncement*> ElimMessages;
 	
 	FHUDPackage HUDPackage;
 
