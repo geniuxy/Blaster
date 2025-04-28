@@ -35,6 +35,8 @@ public:
 	void ShowDeathMessage(const FString& KillerName);
 	void UpdateDeathMessage();
 
+	void SetTeam(ETeam TeamToSet);
+
 private:
 	ABlasterCharacter* Character;
 	ABlasterPlayerController* Controller;
@@ -45,11 +47,13 @@ private:
 	UPROPERTY(ReplicatedUsing= OnRep_KilledBy)
 	FString KilledBy;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_Team)
 	ETeam Team = ETeam::ET_NoTeam;
+
+	UFUNCTION()
+	void OnRep_Team();
 
 public:
 	FORCEINLINE ETeam GetTeam() const { return Team; }
-	FORCEINLINE void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
 	FORCEINLINE void SetKilledBy(const FString& KillerName) { KilledBy = KillerName; }
 };

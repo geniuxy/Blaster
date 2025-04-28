@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairInterface.h"
 #include "Blaster/Weapon/Weapon.h"
@@ -91,6 +92,8 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLostTheLead();
+
+	void SetTeamColor(ETeam Team);
 
 protected:
 	virtual void BeginPlay() override;
@@ -335,8 +338,27 @@ private:
 	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
 
 	// 角色溶解前的初始MI
-	UPROPERTY(EditAnywhere, Category = Elim)
+	UPROPERTY(VisibleAnywhere, Category = Elim)
 	UMaterialInstance* DissolveMaterialInstance;
+
+	/** 
+	* Team colors
+	*/
+
+	UPROPERTY(EditAnywhere, Category = Color)
+	UMaterialInstance* RedDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Color)
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Color)
+	UMaterialInstance* BlueDissolveMatInst;
+
+	UPROPERTY(EditAnywhere, Category = Color)
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere, Category = Color)
+	UMaterialInstance* OriginalMaterial;
 
 	/**
 	 *  Elim Bot
