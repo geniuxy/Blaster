@@ -16,6 +16,8 @@
 #include "Sound/SoundCue.h"
 #include "BlasterCharacter.generated.h"
 
+class ABlasterGameMode;
+class ABlasterPlayerState;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UCombatComponent;
@@ -185,9 +187,11 @@ protected:
 
 private:
 	UPROPERTY()
-	class ABlasterPlayerController* BlasterPlayerController;
+	ABlasterPlayerController* BlasterPlayerController;
 	UPROPERTY()
-	class ABlasterPlayerState* BlasterPlayerState;
+	ABlasterPlayerState* BlasterPlayerState;
+	UPROPERTY()
+	ABlasterGameMode* BlasterGameMode;
 
 	UPROPERTY(VisibleAnywhere, Category= Camera)
 	USpringArmComponent* CameraBoom;

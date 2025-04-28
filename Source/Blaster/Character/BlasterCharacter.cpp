@@ -182,7 +182,7 @@ void ABlasterCharacter::Destroyed()
 	if (ElimBotComponent)
 		ElimBotComponent->DestroyComponent();
 
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
 	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress)
 		Combat->EquippedWeapon->Destroy();
@@ -372,7 +372,10 @@ void ABlasterCharacter::PlaySwapWeaponMontage()
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                       class AController* InstigatorController, AActor* DamageCauser)
 {
-	if (bElimmed) return;
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
+	if (bElimmed || BlasterGameMode == nullptr) return;
+	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
+
 	float DamageToHealth = Damage;
 	if (CurrentShield > 0.f)
 	{
@@ -391,12 +394,13 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 
 	UpdateHUDHealth();
 	UpdateHUDShield();
-	if (!bElimmed)
+	if (!bElimmed && Damage != 0.f)
 		PlayHitReatMontage();
 
 	if (CurrentHealth == 0.f)
 	{
-		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		BlasterGameMode =
+			BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 		if (BlasterGameMode)
 		{
 			BlasterPlayerController = BlasterPlayerController == nullptr
@@ -691,7 +695,7 @@ void ABlasterCharacter::UpdateHUDAmmo()
 
 void ABlasterCharacter::SpawnDefaultWeapon()
 {
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	UWorld* World = GetWorld();
 	if (BlasterGameMode && World && Combat && Combat->StartingWeaponClass)
 	{
@@ -852,7 +856,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 
 void ABlasterCharacter::ElimTimerFinished()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	if (BlasterGameMode && !bLeftGame)
 		BlasterGameMode->RequestRespawn(this, Controller);
 	if (bLeftGame && IsLocallyControlled())
@@ -861,7 +865,7 @@ void ABlasterCharacter::ElimTimerFinished()
 
 void ABlasterCharacter::ServerLeaveGame_Implementation()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
 	if (BlasterGameMode && BlasterPlayerState)
 		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);
