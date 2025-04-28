@@ -647,6 +647,8 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		GetMesh()->SetVisibility(false);
 		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 	}
 	else
 	{
@@ -654,6 +656,8 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		GetMesh()->SetVisibility(true);
 		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 	}
 }
 
@@ -796,6 +800,7 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 	// disable collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AttachGrenade->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// spawn elim bot
 	if (ElimBotEffect)
@@ -846,7 +851,7 @@ void ABlasterCharacter::MulticastGainedTheLead_Implementation()
 	{
 		CrownComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			CrownSystem,
-			GetCapsuleComponent(),
+			GetMesh(),
 			FName(),
 			GetActorLocation() + FVector(0.f, 0.f, 110.f),
 			GetActorRotation(),
